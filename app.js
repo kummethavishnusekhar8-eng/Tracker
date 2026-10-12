@@ -556,19 +556,31 @@ function calculateFitWidthScale() {
 }
 
 function triggerFitPage() {
+  if (window.innerWidth <= 768) {
+    applyZoom(1.0, "normal");
+    return;
+  }
   const scale = calculateFitPageScale();
   applyZoom(scale, "fit-page");
 }
 
 function triggerFitWidth() {
+  if (window.innerWidth <= 768) {
+    applyZoom(1.0, "normal");
+    return;
+  }
   const scale = calculateFitWidthScale();
   applyZoom(scale, "fit-width");
 }
 
 window.addEventListener("resize", () => {
   if (document.getElementById("sheetTab")?.classList.contains("active")) {
-    if (currentZoomMode === "fit-page") triggerFitPage();
-    else if (currentZoomMode === "fit-width") triggerFitWidth();
+    if (window.innerWidth <= 768) {
+      applyZoom(1.0, "normal");
+    } else {
+      if (currentZoomMode === "fit-page") triggerFitPage();
+      else if (currentZoomMode === "fit-width") triggerFitWidth();
+    }
   }
 });
 
@@ -1161,15 +1173,8 @@ function setupEventListeners() {
   document.getElementById("sheetAddHabitBtn")?.addEventListener("click", () => addHabit());
   document.getElementById("mobileAddHabitBtn")?.addEventListener("click", () => addHabit());
 
-  // Toggle View button on mobile card
-  document.getElementById("mobileToggleViewBtn")?.addEventListener("click", () => {
-    const sheetContainer = document.getElementById("sheetScrollContainer");
-    if (sheetContainer) {
-      const isHidden = sheetContainer.style.display === "none";
-      sheetContainer.style.display = isHidden ? "block" : "none";
-      document.getElementById("mobileToggleViewBtn").textContent = isHidden ? "Hide Sheet" : "Show Sheet";
-    }
-  });
+  // Setup Mobile Mode Switcher (Today's Checklist vs Full Month Table)
+  setupMobileModeSwitcher();
 
   // Auto-save on inputs
   const autoSaveIds = [
@@ -1284,6 +1289,48 @@ function setupEventListeners() {
   document.getElementById("clearProfileBtn")?.addEventListener("click", clearProfile);
 }
 
+// =========================================================
+// MOBILE MODE SWITCHER (Today's Checklist vs Full Month Table)
+// =========================================================
+function setupMobileModeSwitcher() {
+  const modeTodayBtn = document.getElementById("modeTodayBtn");
+  const modeSheetBtn = document.getElementById("modeSheetBtn");
+  const todayCard = document.getElementById("mobileTodayCard");
+  const sheetContainer = document.getElementById("sheetScrollContainer");
+
+  function setMode(mode) {
+    if (mode === "today") {
+      modeTodayBtn?.classList.add("active");
+      modeSheetBtn?.classList.remove("active");
+      if (todayCard) todayCard.style.display = "block";
+      if (sheetContainer) sheetContainer.style.display = "none";
+    } else {
+      modeSheetBtn?.classList.add("active");
+      modeTodayBtn?.classList.remove("active");
+      if (todayCard) todayCard.style.display = "none";
+      if (sheetContainer) {
+        sheetContainer.style.display = "block";
+        if (window.innerWidth <= 768) {
+          applyZoom(1.0, "normal");
+        } else {
+          triggerFitPage();
+        }
+      }
+    }
+  }
+
+  modeTodayBtn?.addEventListener("click", () => setMode("today"));
+  modeSheetBtn?.addEventListener("click", () => setMode("sheet"));
+  document.getElementById("mobileCheckAllBtn")?.addEventListener("click", completeTodayHabits);
+
+  // Set default view: mobile starts in 'today' mode; desktop starts in 'sheet' mode
+  if (window.innerWidth <= 768) {
+    setMode("today");
+  } else {
+    setMode("sheet");
+  }
+}
+
 // Initial Boot
 document.addEventListener("DOMContentLoaded", () => {
   // Register Service Worker for offline PWA on iPhone & PC
@@ -1297,5 +1344,10 @@ document.addEventListener("DOMContentLoaded", () => {
   loadData();
   setRandomQuote();
   updateTimerDisplay();
-  setTimeout(triggerFitPage, 150);
+
+  if (window.innerWidth > 768) {
+    setTimeout(triggerFitPage, 150);
+  } else {
+    applyZoom(1.0, "normal");
+  }
 });

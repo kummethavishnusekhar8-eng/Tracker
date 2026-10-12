@@ -192,6 +192,16 @@
         </div>
       </div>
 
+      <!-- Mobile Mode Switcher (Today vs Sheet) -->
+      <div class="mobile-mode-switcher no-print" id="mobileModeSwitcher">
+        <button class="mode-pill active" id="modeTodayBtn">
+          <span>📱</span> Today's Checklist
+        </button>
+        <button class="mode-pill" id="modeSheetBtn">
+          <span>📅</span> Full Month Table
+        </button>
+      </div>
+
       <!-- Quick Mobile / Today's Focus Card (Optimal for iPhone Thumb Check & Edit) -->
       <div class="mobile-today-card no-print" id="mobileTodayCard">
         <div class="today-card-header">
@@ -200,8 +210,8 @@
             <h2 class="today-title">TODAY'S HABIT CHECKLIST</h2>
           </div>
           <div class="today-actions">
-            <button class="btn-sm btn-glow" id="mobileAddHabitBtn">➕ Add</button>
-            <button class="btn-sm btn-sub" id="mobileToggleViewBtn">Toggle Sheet</button>
+            <button class="btn-sm btn-sub" id="mobileCheckAllBtn">⚡ Check All</button>
+            <button class="btn-sm btn-glow" id="mobileAddHabitBtn">➕ Add Habit</button>
           </div>
         </div>
 
