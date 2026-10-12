@@ -1645,7 +1645,7 @@ function setupMobileModeSwitcher() {
 }
 
 // =========================================================
-// CINEMATIC 2-SECOND VIDEO SOUND SYNTHESIZER
+// CINEMATIC 1.4-SECOND VIDEO SOUND SYNTHESIZER
 // =========================================================
 function playCinematicVideoSound() {
   try {
@@ -1654,35 +1654,35 @@ function playCinematicVideoSound() {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    // 1. Sub-bass cinematic riser sweep (75Hz -> 280Hz over 2s)
+    // 1. Sub-bass cinematic riser sweep (75Hz -> 280Hz over 1.4s)
     const subOsc = ctx.createOscillator();
     const subGain = ctx.createGain();
     subOsc.type = "sine";
     subOsc.frequency.setValueAtTime(75, now);
-    subOsc.frequency.exponentialRampToValueAtTime(260, now + 1.8);
+    subOsc.frequency.exponentialRampToValueAtTime(280, now + 1.2);
     subGain.gain.setValueAtTime(0.01, now);
-    subGain.gain.linearRampToValueAtTime(0.24, now + 1.2);
-    subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+    subGain.gain.linearRampToValueAtTime(0.25, now + 0.85);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
     subOsc.connect(subGain);
     subGain.connect(ctx.destination);
     subOsc.start(now);
-    subOsc.stop(now + 2.0);
+    subOsc.stop(now + 1.4);
 
     // 2. Harmonic crystalline energy shimmer (440Hz -> 880Hz)
     const shimmerOsc = ctx.createOscillator();
     const shimmerGain = ctx.createGain();
     shimmerOsc.type = "triangle";
     shimmerOsc.frequency.setValueAtTime(440, now);
-    shimmerOsc.frequency.exponentialRampToValueAtTime(880, now + 1.6);
+    shimmerOsc.frequency.exponentialRampToValueAtTime(880, now + 1.1);
     shimmerGain.gain.setValueAtTime(0.01, now);
-    shimmerGain.gain.linearRampToValueAtTime(0.12, now + 1.4);
-    shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+    shimmerGain.gain.linearRampToValueAtTime(0.12, now + 0.9);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
     shimmerOsc.connect(shimmerGain);
     shimmerGain.connect(ctx.destination);
     shimmerOsc.start(now);
-    shimmerOsc.stop(now + 2.0);
+    shimmerOsc.stop(now + 1.4);
 
-    // 3. Crisp resolution impact chime at 1.75s
+    // 3. Crisp resolution impact chime at 1.2s
     setTimeout(() => {
       try {
         const impactCtx = new AudioCtx();
@@ -1692,18 +1692,18 @@ function playCinematicVideoSound() {
         impactOsc.type = "sine";
         impactOsc.frequency.setValueAtTime(1046.5, t); // C6 crystal chime
         impactGain.gain.setValueAtTime(0.18, t);
-        impactGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        impactGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
         impactOsc.connect(impactGain);
         impactGain.connect(impactCtx.destination);
         impactOsc.start(t);
-        impactOsc.stop(t + 0.5);
+        impactOsc.stop(t + 0.4);
       } catch (err) {}
-    }, 1750);
+    }, 1200);
   } catch (e) {}
 }
 
 // =========================================================
-// CINEMATIC 2-SECOND VIDEO INTRO GATEWAY (Phone & Laptop Ready)
+// CINEMATIC VIDEO INTRO GATEWAY (Phone & Laptop Ready)
 // =========================================================
 function setupIntroGateway() {
   const gateway = document.getElementById("introGateway");
@@ -1776,30 +1776,30 @@ function setupIntroGateway() {
     }
   }
 
-  // 2-Second Cinematic Video Launch sequence
+  // Fast & Snappy 1.4-Second Cinematic Video Launch sequence
   function launchCinematicVideo() {
     if (isLaunching) return;
     isLaunching = true;
 
-    // Start 2s video-like sound effect
+    // Start snappy video-like sound effect
     playCinematicVideoSound();
 
-    // 1. Widescreen cinema bars & image scales big to fill viewport
+    // 1. Neon tunnel surge & image pushes forward through 3D corridor
     gateway.classList.add("is-playing-video");
     imageTarget.classList.add("is-zooming-big");
 
-    // 2. Timeline scrubber fills smoothly over exactly 2.0 seconds
+    // 2. Timeline scrubber fills smoothly over 1.4 seconds (if present)
     if (timelineFill) {
-      timelineFill.style.transition = "width 2.0s cubic-bezier(0.2, 0.85, 0.3, 1)";
+      timelineFill.style.transition = "width 1.4s cubic-bezier(0.2, 0.85, 0.3, 1)";
       timelineFill.style.width = "100%";
     }
 
-    // 3. Cinematic white shutter flash at 1.8s
+    // 3. Cinematic white shutter flash at 1.2s
     setTimeout(() => {
       if (cinemaFlash) cinemaFlash.classList.add("active");
-    }, 1800);
+    }, 1200);
 
-    // 4. Open Main Page exactly at 2.0s
+    // 4. Open Main Page smoothly at 1.4s
     setTimeout(() => {
       gateway.classList.add("dismissed");
       if (cinemaFlash) cinemaFlash.classList.remove("active");
@@ -1812,8 +1812,8 @@ function setupIntroGateway() {
         if (window.innerWidth > 768) {
           triggerFitPage();
         }
-      }, 400);
-    }, 2000);
+      }, 350);
+    }, 1400);
   }
 
   function dismissImmediately() {

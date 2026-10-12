@@ -13,7 +13,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="style.css?v=4.0">
 </head>
 <body class="wallpaper-theme">
 
@@ -32,26 +35,27 @@
     <!-- Cinematic Shutter Flash at 2.0s mark -->
     <div class="intro-cinema-flash" id="introCinemaFlash"></div>
 
-    <!-- Centered Stage Container (Only One Photo & Quotes, Equal 360 Sides) -->
+    <!-- Centered Stage Container (Only One Photo & Quotes, 3D Neon Tunnel Corridor) -->
     <div class="intro-card" id="introCard">
-      <!-- 1. The One Photo with Equal 360 Sides & Rotating Energy Halo -->
-      <div class="intro-portal-stage">
-        <!-- 360-Degree Energy Orbit Rings -->
-        <div class="intro-orbit-pulse" id="introOrbitPulse"></div>
-        <div class="intro-orbit-ring" id="introOrbitRing"></div>
-
-        <!-- Symmetrical 360 Circular/Squircle Photo Portal -->
+      <!-- 1. The One Photo inside 3D Concentric Neon Lights Tunnel -->
+      <div class="intro-neon-tunnel-stage">
+        <!-- Concentric 3D Neon Light Frames (Smooth forward travel in 3D space) -->
+        <div class="neon-tunnel-glow"></div>
+        <div class="neon-frame neon-frame-1"></div>
+        <div class="neon-frame neon-frame-2"></div>
+        <div class="neon-frame neon-frame-3"></div>
+        <div class="neon-frame neon-frame-4"></div>
+        
+        <!-- Symmetrical 360 Equal-Sides Photo -->
         <div class="intro-image-wrapper" id="introImageTarget" role="button" tabindex="0" title="Click to enter Tracker">
           <img src="assets/discipline_hero.jpg" alt="Discipline Warrior" class="intro-hero-image" id="introHeroImg">
           <div class="intro-hero-vignette"></div>
+          <div class="intro-neon-rim"></div>
           <div class="intro-lens-streak"></div>
-          
-          <!-- Sleek Center Energy Reticle -->
-          <div class="intro-reticle-ring"></div>
         </div>
       </div>
 
-      <!-- 2. The Quotes (Equally balanced & centered below 360 photo) -->
+      <!-- 2. The Quotes (Equally balanced & centered below photo) -->
       <div class="intro-quote-card">
         <span class="quote-mark">“</span>
         <p id="introQuoteText">The pain of discipline is far less than the pain of regret.</p>
@@ -770,6 +774,6 @@
   </main>
 
   <script src="assets/peerjs.min.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=4.0"></script>
 </body>
 </html>
