@@ -1711,10 +1711,8 @@ function setupIntroGateway() {
   const heroImg = document.getElementById("introHeroImg");
   const timelineFill = document.getElementById("introTimelineFill");
   const cinemaFlash = document.getElementById("introCinemaFlash");
-  const showIntroCheck = document.getElementById("showIntroEveryTimeCheck");
   const skipBtn = document.getElementById("skipIntroBtn");
   const brandBadgeBtn = document.getElementById("brandBadgeBtn");
-  const thumbBtns = document.querySelectorAll(".intro-thumbnails-row .thumb-btn");
   const wallpaperBg = document.getElementById("wallpaperBg");
 
   if (!gateway || !imageTarget) return;
@@ -1835,42 +1833,7 @@ function setupIntroGateway() {
     gateway.classList.remove("dismissed");
   }
 
-  // Preset Selection: Clicking any thumbnail switches theme and triggers the 2s video launch!
-  thumbBtns.forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      thumbBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      const imgPath = btn.dataset.img;
-      const preset = btn.dataset.preset;
-
-      if (imgPath && heroImg) {
-        heroImg.src = imgPath;
-        if (wallpaperBg) {
-          wallpaperBg.style.backgroundImage = `url('${imgPath}')`;
-          wallpaperBg.style.background = "";
-        }
-      } else if (preset === "cyber" && heroImg) {
-        const cyberSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'><defs><radialGradient id='g' cx='50%' cy='30%' r='70%'><stop offset='0%' stop-color='%2338bdf8'/><stop offset='50%' stop-color='%230284c7'/><stop offset='100%' stop-color='%23020617'/></radialGradient></defs><rect width='800' height='500' fill='url(%23g)'/><circle cx='400' cy='220' r='100' fill='none' stroke='%2338bdf8' stroke-width='4' opacity='0.7'/><text x='400' y='235' font-family='sans-serif' font-size='60' font-weight='900' fill='%23ffffff' text-anchor='middle'>⚡ CYBER ARC</text><text x='400' y='275' font-family='monospace' font-size='18' fill='%237dd3fc' text-anchor='middle'>DISCIPLINE PROTOCOL</text></svg>";
-        heroImg.src = cyberSvg;
-        if (wallpaperBg) {
-          wallpaperBg.style.backgroundImage = "radial-gradient(circle at 50% 20%, #0369a1 0%, #082f49 50%, #020617 100%)";
-        }
-      } else if (preset === "gold" && heroImg) {
-        const goldSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'><defs><radialGradient id='g2' cx='50%' cy='30%' r='70%'><stop offset='0%' stop-color='%23fbbf24'/><stop offset='50%' stop-color='%23b45309'/><stop offset='100%' stop-color='%230a0a0a'/></radialGradient></defs><rect width='800' height='500' fill='url(%23g2)'/><circle cx='400' cy='220' r='100' fill='none' stroke='%23fbbf24' stroke-width='4' opacity='0.7'/><text x='400' y='235' font-family='sans-serif' font-size='60' font-weight='900' fill='%23ffffff' text-anchor='middle'>🏆 GOLD ARC</text><text x='400' y='275' font-family='monospace' font-size='18' fill='%23fef08a' text-anchor='middle'>CHAMPION MINDSET</text></svg>";
-        heroImg.src = goldSvg;
-        if (wallpaperBg) {
-          wallpaperBg.style.backgroundImage = "radial-gradient(circle at 50% 20%, #78350f 0%, #451a03 50%, #0a0a0a 100%)";
-        }
-      }
-
-      // Launch 2-second video animation
-      launchCinematicVideo();
-    });
-  });
-
-  // Primary Action: Clicking the Image expands it big and launches the 2s video animation!
+  // Action: Clicking the Image expands it big and launches the 2s video animation!
   imageTarget.addEventListener("click", launchCinematicVideo);
 
   // Keyboard support: Pressing Enter or Space clicks image and launches
