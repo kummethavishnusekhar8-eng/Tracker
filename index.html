@@ -16,7 +16,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="style.css?v=7.0">
+  <link rel="stylesheet" href="style.css?v=8.0">
 </head>
 <body class="wallpaper-theme">
 
@@ -590,26 +590,33 @@
     <section class="tab-panel no-print" id="nutritionTab">
       <div class="dashboard-grid">
 
-        <!-- Hydration Tracker (3 Liters / 8 Cups) -->
+        <!-- Hydration Tracker (Custom Water Target & Cups) -->
         <div class="dash-card col-span-2">
-          <div class="dash-card-header">
-            <h3>💧 Daily 3L Water Intake Protocol</h3>
+          <div class="dash-card-header" style="flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h3>💧 Daily Water Intake Protocol</h3>
+              <div style="display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.35); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12);">
+                <label for="waterGoalInput" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">Goal:</label>
+                <input type="number" id="waterGoalInput" min="1" max="10" step="0.5" value="3.0" style="width: 52px; background: transparent; border: none; color: #38bdf8; font-weight: 800; font-size: 0.85rem; outline: none; text-align: center;">
+                <span style="font-size: 0.75rem; color: #38bdf8; font-weight: 700;">L</span>
+              </div>
+            </div>
             <span class="badge" id="waterAmountText">0.0 / 3.0 L</span>
           </div>
           <div class="water-progress-bar-wrap">
             <div class="water-progress-fill" id="waterProgressFill" style="width: 0%;"></div>
           </div>
-          <div class="water-cups-row">
-            <button class="cup-item" data-cup="1" title="Glass 1 (375ml)">🥛 1</button>
-            <button class="cup-item" data-cup="2" title="Glass 2 (750ml)">🥛 2</button>
-            <button class="cup-item" data-cup="3" title="Glass 3 (1.1L)">🥛 3</button>
-            <button class="cup-item" data-cup="4" title="Glass 4 (1.5L)">🥛 4</button>
-            <button class="cup-item" data-cup="5" title="Glass 5 (1.9L)">🥛 5</button>
-            <button class="cup-item" data-cup="6" title="Glass 6 (2.25L)">🥛 6</button>
-            <button class="cup-item" data-cup="7" title="Glass 7 (2.6L)">🥛 7</button>
-            <button class="cup-item" data-cup="8" title="Glass 8 (3.0L)">🏆 8</button>
+          <div class="water-cups-row" id="waterCupsContainer">
+            <button class="cup-item" data-cup="1" title="Glass 1">🥛 1</button>
+            <button class="cup-item" data-cup="2" title="Glass 2">🥛 2</button>
+            <button class="cup-item" data-cup="3" title="Glass 3">🥛 3</button>
+            <button class="cup-item" data-cup="4" title="Glass 4">🥛 4</button>
+            <button class="cup-item" data-cup="5" title="Glass 5">🥛 5</button>
+            <button class="cup-item" data-cup="6" title="Glass 6">🥛 6</button>
+            <button class="cup-item" data-cup="7" title="Glass 7">🥛 7</button>
+            <button class="cup-item" data-cup="8" title="Glass 8">🏆 8</button>
           </div>
-          <p class="card-desc" style="margin-top: 12px;">Tap a glass to mark your hydration. Adequate water accelerates muscle recovery and cognitive focus.</p>
+          <p class="card-desc" style="margin-top: 12px;">Tap a glass to mark your hydration. Set your custom daily water goal above (e.g. 2.5L, 3.0L, 4.0L).</p>
         </div>
 
         <!-- Daily Target Macros Card -->
@@ -676,11 +683,15 @@
           <span class="stat-sub" id="statTotalChecks">0 Total Checks Logged</span>
         </div>
 
-        <!-- Stat Card 3: Average Sleep -->
+        <!-- Stat Card 3: Average Sleep (Custom Sleep Target) -->
         <div class="stat-card">
           <span class="stat-title">SLEEP RECOVERY</span>
           <span class="stat-big" id="statSleepBig">- hrs</span>
-          <span class="stat-sub">Target: 8.0 hrs</span>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+            <label for="sleepGoalInput" class="stat-sub" style="margin: 0; cursor: pointer;">Target:</label>
+            <input type="number" id="sleepGoalInput" min="5" max="12" step="0.5" value="8.0" style="width: 48px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; color: #f8fafc; font-size: 0.75rem; text-align: center; font-weight: 700;">
+            <span class="stat-sub" style="margin: 0;">hrs</span>
+          </div>
         </div>
 
         <!-- Stat Card 4: Current Daily Streak -->
@@ -770,6 +781,6 @@
   </main>
 
   <script src="assets/peerjs.min.js"></script>
-  <script src="app.js?v=6.0"></script>
+  <script src="app.js?v=8.0"></script>
 </body>
 </html>

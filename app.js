@@ -693,22 +693,39 @@ function addExerciseRow() {
 }
 
 // =========================================================
-// HYDRATION (3L) & FUEL
 // =========================================================
-const waterCups = document.querySelectorAll(".cup-item");
+// HYDRATION & FUEL (Custom Water Goal Support)
+// =========================================================
 const waterAmountText = document.getElementById("waterAmountText");
 const waterProgressFill = document.getElementById("waterProgressFill");
+const waterGoalInput = document.getElementById("waterGoalInput");
+
+function getTargetWaterLiters() {
+  const customVal = parseFloat(waterGoalInput?.value || trackerData.waterGoal || 3.0);
+  return isNaN(customVal) || customVal <= 0 ? 3.0 : customVal;
+}
 
 function updateWaterUI() {
+  const targetLiters = getTargetWaterLiters();
+  const perGlassLiters = targetLiters / 8;
+
+  const waterCups = document.querySelectorAll(".cup-item");
   waterCups.forEach((cup, idx) => {
     cup.classList.toggle("filled", idx < waterCupsCount);
+    const glassAmount = ((idx + 1) * perGlassLiters).toFixed(1);
+    cup.title = `Glass ${idx + 1} (${glassAmount} L)`;
   });
-  const liters = (waterCupsCount * 0.375).toFixed(2);
-  if (waterAmountText) waterAmountText.textContent = `${liters} / 3.0 L`;
+
+  const currentLiters = (waterCupsCount * perGlassLiters).toFixed(2);
+  if (waterAmountText) {
+    waterAmountText.textContent = `${currentLiters} / ${targetLiters.toFixed(1)} L`;
+  }
+
   const pct = Math.min(100, Math.round((waterCupsCount / 8) * 100));
   if (waterProgressFill) waterProgressFill.style.width = `${pct}%`;
 
   trackerData.water = waterCupsCount;
+  trackerData.waterGoal = targetLiters;
   saveData();
 }
 
@@ -730,8 +747,15 @@ function setRandomQuote() {
 }
 
 // =========================================================
-// STATS & STREAK ANALYTICS
+// STATS & STREAK ANALYTICS (Custom Sleep Goal Support)
 // =========================================================
+const sleepGoalInput = document.getElementById("sleepGoalInput");
+
+function getTargetSleepHours() {
+  const customVal = parseFloat(sleepGoalInput?.value || trackerData.sleepGoal || 8.0);
+  return isNaN(customVal) || customVal <= 0 ? 8.0 : customVal;
+}
+
 function updateStats() {
   const today = new Date();
   const currentDayNum = Math.min(Math.max(today.getDate(), 1), 31);
@@ -759,7 +783,9 @@ function updateStats() {
   if (statMonthBig) statMonthBig.textContent = `${monthPct}%`;
   if (statTotalChecks) statTotalChecks.textContent = `${totalChecks} Total Checks Logged`;
 
-  // Sleep recovery avg
+  // Sleep recovery avg with custom target comparison
+  const targetSleep = getTargetSleepHours();
+  trackerData.sleepGoal = targetSleep;
   const sleepEntries = Object.values(trackerData.sleepGrid);
   const statSleepBig = document.getElementById("statSleepBig");
   if (sleepEntries.length > 0) {
@@ -967,6 +993,8 @@ function applyDataToState(parsed) {
     weekly: parsed.weekly || {},
     reflection: parsed.reflection || {},
     water: parsed.water || 0,
+    waterGoal: parsed.waterGoal || 3.0,
+    sleepGoal: parsed.sleepGoal || 8.0,
     split: parsed.split || "Push (Chest, Shoulders, Triceps)",
     splitNotes: parsed.splitNotes || "",
     exercises: Array.isArray(parsed.exercises) ? parsed.exercises : trackerData.exercises,
@@ -988,6 +1016,8 @@ function resetToDefaultState() {
     weekly: {},
     reflection: {},
     water: 0,
+    waterGoal: 3.0,
+    sleepGoal: 8.0,
     split: "Push (Chest, Shoulders, Triceps)",
     splitNotes: "",
     exercises: [
@@ -1034,6 +1064,10 @@ function populateUIWithData() {
   });
   const currentSplitLabel = document.getElementById("currentSplitLabel");
   if (currentSplitLabel) currentSplitLabel.textContent = trackerData.split.split(" ")[0] + " Day";
+
+  // Custom Goals: Water & Sleep
+  if (waterGoalInput) waterGoalInput.value = trackerData.waterGoal || 3.0;
+  if (sleepGoalInput) sleepGoalInput.value = trackerData.sleepGoal || 8.0;
 
   // Water
   waterCupsCount = trackerData.water || 0;
@@ -1590,12 +1624,30 @@ function setupEventListeners() {
   // Exercise table add row
   document.getElementById("addExerciseRowBtn")?.addEventListener("click", addExerciseRow);
 
-  // Water buttons
+  // Water buttons & Custom Water Goal
+  const waterCups = document.querySelectorAll(".cup-item");
   waterCups.forEach(cup => {
     cup.addEventListener("click", () => {
       const cupIdx = parseInt(cup.dataset.cup, 10);
       handleWaterClick(cupIdx);
     });
+  });
+
+  waterGoalInput?.addEventListener("change", () => {
+    updateWaterUI();
+  });
+  waterGoalInput?.addEventListener("input", () => {
+    updateWaterUI();
+  });
+
+  // Custom Sleep Goal
+  sleepGoalInput?.addEventListener("change", () => {
+    updateStats();
+    saveData();
+  });
+  sleepGoalInput?.addEventListener("input", () => {
+    updateStats();
+    saveData();
   });
 
   // Quote Refresh
