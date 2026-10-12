@@ -1500,6 +1500,161 @@ function setupMobileModeSwitcher() {
   }
 }
 
+// =========================================================
+// INTRO ANIMATION GATEWAY (Suitable for Phone & Laptop)
+// =========================================================
+let introAutoTimer = null;
+let introElapsed = 0;
+const INTRO_DURATION_MS = 4000;
+
+function setupIntroGateway() {
+  const gateway = document.getElementById("introGateway");
+  const enterBtn = document.getElementById("enterTrackerBtn");
+  const timerFill = document.getElementById("introTimerFill");
+  const timerText = document.getElementById("introTimerText");
+  const showIntroCheck = document.getElementById("showIntroEveryTimeCheck");
+  const brandBadgeBtn = document.getElementById("brandBadgeBtn");
+
+  if (!gateway) return;
+
+  const isSkipIntro = localStorage.getItem("tracker_skip_intro") === "true";
+  if (showIntroCheck) {
+    showIntroCheck.checked = !isSkipIntro;
+    showIntroCheck.addEventListener("change", (e) => {
+      localStorage.setItem("tracker_skip_intro", e.target.checked ? "false" : "true");
+    });
+  }
+
+  function updateGatewayData() {
+    const greeting = document.getElementById("introGreeting");
+    const dateVal = document.getElementById("introDateVal");
+    const streakVal = document.getElementById("introStreakVal");
+    const habitsCount = document.getElementById("introHabitsCount");
+    const quoteText = document.getElementById("introQuoteText");
+
+    const todayDate = new Date();
+    const todayNum = todayDate.getDate();
+
+    if (greeting) {
+      if (athleteProfile && athleteProfile.name) {
+        greeting.textContent = `⚡ WELCOME, ${athleteProfile.name.split(" ")[0].toUpperCase()}`;
+      } else {
+        greeting.textContent = "⚡ DAILY DISCIPLINE OS";
+      }
+    }
+
+    if (dateVal) {
+      dateVal.textContent = `Day ${todayNum} • ${MONTH_NAMES[todayDate.getMonth()].slice(0, 3)}`;
+    }
+
+    // Calculate streak
+    let streak = 0;
+    for (let d = todayNum; d >= 1; d--) {
+      let dayCount = 0;
+      trackerData.habits.forEach((_, idx) => {
+        if (trackerData.habitGrid[`${idx}_${d}`]) dayCount++;
+      });
+      if (dayCount > 0) streak++;
+      else break;
+    }
+    if (streakVal) {
+      streakVal.textContent = streak > 0 ? `${streak} Days 🔥` : "Day 1 🚀";
+    }
+
+    // Completed today
+    let doneToday = 0;
+    trackerData.habits.forEach((_, idx) => {
+      if (trackerData.habitGrid[`${idx}_${todayNum}`]) doneToday++;
+    });
+    if (habitsCount) {
+      habitsCount.textContent = `${doneToday}/${trackerData.habits.length} Done`;
+    }
+
+    // Random quote
+    if (quoteText) {
+      const q = DISCIPLINE_QUOTES[Math.floor(Math.random() * DISCIPLINE_QUOTES.length)];
+      quoteText.textContent = q.replace(/^"|"$/g, "");
+    }
+  }
+
+  function dismissGateway(immediate = false) {
+    if (introAutoTimer) {
+      clearInterval(introAutoTimer);
+      introAutoTimer = null;
+    }
+
+    if (immediate) {
+      gateway.style.display = "none";
+      gateway.classList.add("dismissed");
+      return;
+    }
+
+    // Tactile launch sound chime
+    playAudioBeep(587, 0.1, "triangle");
+    setTimeout(() => playAudioBeep(880, 0.2, "triangle"), 90);
+
+    gateway.classList.add("dismissed");
+    setTimeout(() => {
+      gateway.style.display = "none";
+      if (window.innerWidth > 768) {
+        triggerFitPage();
+      }
+    }, 450);
+  }
+
+  function openGateway() {
+    if (introAutoTimer) clearInterval(introAutoTimer);
+    updateGatewayData();
+    gateway.classList.remove("dismissed");
+    gateway.style.display = "flex";
+    startCountdown();
+  }
+
+  function startCountdown() {
+    introElapsed = 0;
+    if (timerFill) timerFill.style.width = "0%";
+    const intervalMs = 50;
+
+    introAutoTimer = setInterval(() => {
+      introElapsed += intervalMs;
+      const pct = Math.min(100, (introElapsed / INTRO_DURATION_MS) * 100);
+      if (timerFill) timerFill.style.width = `${pct}%`;
+
+      const remainingSec = Math.max(1, Math.ceil((INTRO_DURATION_MS - introElapsed) / 1000));
+      if (timerText) timerText.textContent = `Launching in ${remainingSec}s...`;
+
+      if (introElapsed >= INTRO_DURATION_MS) {
+        dismissGateway(false);
+      }
+    }, intervalMs);
+  }
+
+  // Event Listeners
+  enterBtn?.addEventListener("click", () => dismissGateway(false));
+
+  // Pressing Enter or Space to launch when gateway is visible
+  window.addEventListener("keydown", (e) => {
+    if (gateway.style.display !== "none" && !gateway.classList.contains("dismissed")) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        dismissGateway(false);
+      }
+    }
+  });
+
+  // Clicking brand badge in header re-opens the gateway
+  brandBadgeBtn?.addEventListener("click", openGateway);
+
+  // Initial populate and trigger
+  updateGatewayData();
+
+  if (isSkipIntro) {
+    dismissGateway(true);
+  } else {
+    startCountdown();
+  }
+}
+
 // Initial Boot
 document.addEventListener("DOMContentLoaded", () => {
   // Register Service Worker for offline PWA on iPhone & PC
@@ -1514,6 +1669,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setRandomQuote();
   updateTimerDisplay();
   initCloudSync();
+  setupIntroGateway();
 
   if (window.innerWidth > 768) {
     setTimeout(triggerFitPage, 150);
