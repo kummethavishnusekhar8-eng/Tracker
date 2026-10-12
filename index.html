@@ -29,57 +29,23 @@
     <div class="intro-aura intro-aura-gold"></div>
     <div class="intro-aura intro-aura-blue"></div>
 
-    <!-- Cinematic Widescreen Letterbox Bars (Anamorphic 2s Video Look) -->
-    <div class="cinema-bar cinema-bar-top" id="cinemaBarTop"></div>
-    <div class="cinema-bar cinema-bar-bottom" id="cinemaBarBottom"></div>
-
     <!-- Cinematic Shutter Flash at 2.0s mark -->
     <div class="intro-cinema-flash" id="introCinemaFlash"></div>
 
+    <!-- Centered Stage Container (Only One Photo & Quotes, Equal Side Distribution) -->
     <div class="intro-card" id="introCard">
-      <!-- Header Typography -->
-      <div class="intro-header">
-        <span class="intro-kicker" id="introGreeting">⚡ DAILY DISCIPLINE OS</span>
-        <h1 class="intro-title">TRACKER</h1>
-        <p class="intro-subtitle">CONSISTENCY &bull; HABITS &bull; WORKOUTS</p>
+      <!-- 1. The One Photo (Click to zoom big & enter) -->
+      <div class="intro-image-wrapper" id="introImageTarget" role="button" tabindex="0" title="Click to enter Tracker">
+        <img src="assets/gym_wallpaper.jpg" alt="Gym Discipline" class="intro-hero-image" id="introHeroImg">
+        <div class="intro-hero-vignette"></div>
+        <div class="intro-lens-streak"></div>
       </div>
 
-      <!-- Hero Clickable Image Stage (Single image - clicks to zoom big and enter) -->
-      <div class="intro-image-stage" id="introImageStage">
-        <div class="intro-image-wrapper" id="introImageTarget" role="button" tabindex="0" title="Click to enter Tracker">
-          <!-- The Clean Hero Image -->
-          <img src="assets/gym_wallpaper.jpg" alt="Gym Discipline Wallpaper" class="intro-hero-image" id="introHeroImg">
-          
-          <!-- Subtle Cinematic Vignette & Ambient Light Streak -->
-          <div class="intro-hero-vignette"></div>
-          <div class="intro-lens-streak"></div>
-
-          <!-- Sleek Cinematic Enter Badge -->
-          <div class="intro-play-badge">
-            <span class="play-icon">▶</span>
-            <span class="play-text">START PROTOCOL</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Motivational Quote -->
+      <!-- 2. The Quotes (Equally balanced & centered) -->
       <div class="intro-quote-card">
         <span class="quote-mark">“</span>
         <p id="introQuoteText">The pain of discipline is far less than the pain of regret.</p>
         <span class="quote-mark">”</span>
-      </div>
-
-      <!-- 2-Second Video Progress Timeline (Clean minimal scrubber bar) -->
-      <div class="intro-video-timeline" id="introVideoTimeline">
-        <div class="intro-timeline-bar">
-          <div class="intro-timeline-fill" id="introTimelineFill"></div>
-        </div>
-      </div>
-
-      <!-- Direct Enter Option -->
-      <div class="intro-options-row">
-        <span></span>
-        <button class="btn-skip-link" id="skipIntroBtn" title="Directly enter main page">Enter &rarr;</button>
       </div>
     </div>
   </div>
