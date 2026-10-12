@@ -1501,23 +1501,83 @@ function setupMobileModeSwitcher() {
 }
 
 // =========================================================
-// INTRO ANIMATION GATEWAY (Suitable for Phone & Laptop)
+// CINEMATIC 2-SECOND VIDEO SOUND SYNTHESIZER
 // =========================================================
-let introAutoTimer = null;
-let introElapsed = 0;
-const INTRO_DURATION_MS = 4000;
+function playCinematicVideoSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
 
+    // 1. Sub-bass cinematic riser sweep (75Hz -> 280Hz over 2s)
+    const subOsc = ctx.createOscillator();
+    const subGain = ctx.createGain();
+    subOsc.type = "sine";
+    subOsc.frequency.setValueAtTime(75, now);
+    subOsc.frequency.exponentialRampToValueAtTime(260, now + 1.8);
+    subGain.gain.setValueAtTime(0.01, now);
+    subGain.gain.linearRampToValueAtTime(0.24, now + 1.2);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+    subOsc.connect(subGain);
+    subGain.connect(ctx.destination);
+    subOsc.start(now);
+    subOsc.stop(now + 2.0);
+
+    // 2. Harmonic crystalline energy shimmer (440Hz -> 880Hz)
+    const shimmerOsc = ctx.createOscillator();
+    const shimmerGain = ctx.createGain();
+    shimmerOsc.type = "triangle";
+    shimmerOsc.frequency.setValueAtTime(440, now);
+    shimmerOsc.frequency.exponentialRampToValueAtTime(880, now + 1.6);
+    shimmerGain.gain.setValueAtTime(0.01, now);
+    shimmerGain.gain.linearRampToValueAtTime(0.12, now + 1.4);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+    shimmerOsc.connect(shimmerGain);
+    shimmerGain.connect(ctx.destination);
+    shimmerOsc.start(now);
+    shimmerOsc.stop(now + 2.0);
+
+    // 3. Crisp resolution impact chime at 1.75s
+    setTimeout(() => {
+      try {
+        const impactCtx = new AudioCtx();
+        const t = impactCtx.currentTime;
+        const impactOsc = impactCtx.createOscillator();
+        const impactGain = impactCtx.createGain();
+        impactOsc.type = "sine";
+        impactOsc.frequency.setValueAtTime(1046.5, t); // C6 crystal chime
+        impactGain.gain.setValueAtTime(0.18, t);
+        impactGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        impactOsc.connect(impactGain);
+        impactGain.connect(impactCtx.destination);
+        impactOsc.start(t);
+        impactOsc.stop(t + 0.5);
+      } catch (err) {}
+    }, 1750);
+  } catch (e) {}
+}
+
+// =========================================================
+// CINEMATIC 2-SECOND VIDEO INTRO GATEWAY (Phone & Laptop Ready)
+// =========================================================
 function setupIntroGateway() {
   const gateway = document.getElementById("introGateway");
-  const enterBtn = document.getElementById("enterTrackerBtn");
-  const timerFill = document.getElementById("introTimerFill");
-  const timerText = document.getElementById("introTimerText");
+  const imageTarget = document.getElementById("introImageTarget");
+  const heroImg = document.getElementById("introHeroImg");
+  const timelineFill = document.getElementById("introTimelineFill");
+  const cinemaFlash = document.getElementById("introCinemaFlash");
   const showIntroCheck = document.getElementById("showIntroEveryTimeCheck");
+  const skipBtn = document.getElementById("skipIntroBtn");
   const brandBadgeBtn = document.getElementById("brandBadgeBtn");
+  const thumbBtns = document.querySelectorAll(".intro-thumbnails-row .thumb-btn");
+  const wallpaperBg = document.getElementById("wallpaperBg");
 
-  if (!gateway) return;
+  if (!gateway || !imageTarget) return;
 
+  let isLaunching = false;
   const isSkipIntro = localStorage.getItem("tracker_skip_intro") === "true";
+
   if (showIntroCheck) {
     showIntroCheck.checked = !isSkipIntro;
     showIntroCheck.addEventListener("change", (e) => {
@@ -1529,7 +1589,6 @@ function setupIntroGateway() {
     const greeting = document.getElementById("introGreeting");
     const dateVal = document.getElementById("introDateVal");
     const streakVal = document.getElementById("introStreakVal");
-    const habitsCount = document.getElementById("introHabitsCount");
     const quoteText = document.getElementById("introQuoteText");
 
     const todayDate = new Date();
@@ -1561,15 +1620,6 @@ function setupIntroGateway() {
       streakVal.textContent = streak > 0 ? `${streak} Days 🔥` : "Day 1 🚀";
     }
 
-    // Completed today
-    let doneToday = 0;
-    trackerData.habits.forEach((_, idx) => {
-      if (trackerData.habitGrid[`${idx}_${todayNum}`]) doneToday++;
-    });
-    if (habitsCount) {
-      habitsCount.textContent = `${doneToday}/${trackerData.habits.length} Done`;
-    }
-
     // Random quote
     if (quoteText) {
       const q = DISCIPLINE_QUOTES[Math.floor(Math.random() * DISCIPLINE_QUOTES.length)];
@@ -1577,81 +1627,135 @@ function setupIntroGateway() {
     }
   }
 
-  function dismissGateway(immediate = false) {
-    if (introAutoTimer) {
-      clearInterval(introAutoTimer);
-      introAutoTimer = null;
+  function resetGatewayAnimation() {
+    isLaunching = false;
+    imageTarget.classList.remove("is-zooming-big");
+    gateway.classList.remove("is-playing-video", "dismissed");
+    if (cinemaFlash) cinemaFlash.classList.remove("active");
+    if (timelineFill) {
+      timelineFill.style.transition = "none";
+      timelineFill.style.width = "0%";
+      void timelineFill.offsetWidth; // force reflow
+      timelineFill.style.transition = "";
+    }
+  }
+
+  // 2-Second Cinematic Video Launch sequence
+  function launchCinematicVideo() {
+    if (isLaunching) return;
+    isLaunching = true;
+
+    // Start 2s video-like sound effect
+    playCinematicVideoSound();
+
+    // 1. Widescreen cinema bars & image scales big to fill viewport
+    gateway.classList.add("is-playing-video");
+    imageTarget.classList.add("is-zooming-big");
+
+    // 2. Timeline scrubber fills smoothly over exactly 2.0 seconds
+    if (timelineFill) {
+      timelineFill.style.transition = "width 2.0s cubic-bezier(0.2, 0.85, 0.3, 1)";
+      timelineFill.style.width = "100%";
     }
 
-    if (immediate) {
-      gateway.style.display = "none";
-      gateway.classList.add("dismissed");
-      return;
-    }
-
-    // Tactile launch sound chime
-    playAudioBeep(587, 0.1, "triangle");
-    setTimeout(() => playAudioBeep(880, 0.2, "triangle"), 90);
-
-    gateway.classList.add("dismissed");
+    // 3. Cinematic white shutter flash at 1.8s
     setTimeout(() => {
-      gateway.style.display = "none";
-      if (window.innerWidth > 768) {
-        triggerFitPage();
-      }
-    }, 450);
+      if (cinemaFlash) cinemaFlash.classList.add("active");
+    }, 1800);
+
+    // 4. Open Main Page exactly at 2.0s
+    setTimeout(() => {
+      gateway.classList.add("dismissed");
+      if (cinemaFlash) cinemaFlash.classList.remove("active");
+
+      setTimeout(() => {
+        gateway.style.display = "none";
+        resetGatewayAnimation();
+
+        // Responsive fit check for desktop / mobile
+        if (window.innerWidth > 768) {
+          triggerFitPage();
+        }
+      }, 400);
+    }, 2000);
+  }
+
+  function dismissImmediately() {
+    isLaunching = false;
+    gateway.style.display = "none";
+    gateway.classList.add("dismissed");
+    resetGatewayAnimation();
+    if (window.innerWidth > 768) {
+      triggerFitPage();
+    }
   }
 
   function openGateway() {
-    if (introAutoTimer) clearInterval(introAutoTimer);
+    resetGatewayAnimation();
     updateGatewayData();
-    gateway.classList.remove("dismissed");
     gateway.style.display = "flex";
-    startCountdown();
+    gateway.classList.remove("dismissed");
   }
 
-  function startCountdown() {
-    introElapsed = 0;
-    if (timerFill) timerFill.style.width = "0%";
-    const intervalMs = 50;
+  // Preset Selection: Clicking any thumbnail switches theme and triggers the 2s video launch!
+  thumbBtns.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      thumbBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
 
-    introAutoTimer = setInterval(() => {
-      introElapsed += intervalMs;
-      const pct = Math.min(100, (introElapsed / INTRO_DURATION_MS) * 100);
-      if (timerFill) timerFill.style.width = `${pct}%`;
+      const imgPath = btn.dataset.img;
+      const preset = btn.dataset.preset;
 
-      const remainingSec = Math.max(1, Math.ceil((INTRO_DURATION_MS - introElapsed) / 1000));
-      if (timerText) timerText.textContent = `Launching in ${remainingSec}s...`;
-
-      if (introElapsed >= INTRO_DURATION_MS) {
-        dismissGateway(false);
+      if (imgPath && heroImg) {
+        heroImg.src = imgPath;
+        if (wallpaperBg) {
+          wallpaperBg.style.backgroundImage = `url('${imgPath}')`;
+          wallpaperBg.style.background = "";
+        }
+      } else if (preset === "cyber" && heroImg) {
+        const cyberSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'><defs><radialGradient id='g' cx='50%' cy='30%' r='70%'><stop offset='0%' stop-color='%2338bdf8'/><stop offset='50%' stop-color='%230284c7'/><stop offset='100%' stop-color='%23020617'/></radialGradient></defs><rect width='800' height='500' fill='url(%23g)'/><circle cx='400' cy='220' r='100' fill='none' stroke='%2338bdf8' stroke-width='4' opacity='0.7'/><text x='400' y='235' font-family='sans-serif' font-size='60' font-weight='900' fill='%23ffffff' text-anchor='middle'>⚡ CYBER ARC</text><text x='400' y='275' font-family='monospace' font-size='18' fill='%237dd3fc' text-anchor='middle'>DISCIPLINE PROTOCOL</text></svg>";
+        heroImg.src = cyberSvg;
+        if (wallpaperBg) {
+          wallpaperBg.style.backgroundImage = "radial-gradient(circle at 50% 20%, #0369a1 0%, #082f49 50%, #020617 100%)";
+        }
+      } else if (preset === "gold" && heroImg) {
+        const goldSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'><defs><radialGradient id='g2' cx='50%' cy='30%' r='70%'><stop offset='0%' stop-color='%23fbbf24'/><stop offset='50%' stop-color='%23b45309'/><stop offset='100%' stop-color='%230a0a0a'/></radialGradient></defs><rect width='800' height='500' fill='url(%23g2)'/><circle cx='400' cy='220' r='100' fill='none' stroke='%23fbbf24' stroke-width='4' opacity='0.7'/><text x='400' y='235' font-family='sans-serif' font-size='60' font-weight='900' fill='%23ffffff' text-anchor='middle'>🏆 GOLD ARC</text><text x='400' y='275' font-family='monospace' font-size='18' fill='%23fef08a' text-anchor='middle'>CHAMPION MINDSET</text></svg>";
+        heroImg.src = goldSvg;
+        if (wallpaperBg) {
+          wallpaperBg.style.backgroundImage = "radial-gradient(circle at 50% 20%, #78350f 0%, #451a03 50%, #0a0a0a 100%)";
+        }
       }
-    }, intervalMs);
-  }
 
-  // Event Listeners
-  enterBtn?.addEventListener("click", () => dismissGateway(false));
+      // Launch 2-second video animation
+      launchCinematicVideo();
+    });
+  });
 
-  // Pressing Enter or Space to launch when gateway is visible
+  // Primary Action: Clicking the Image expands it big and launches the 2s video animation!
+  imageTarget.addEventListener("click", launchCinematicVideo);
+
+  // Keyboard support: Pressing Enter or Space clicks image and launches
   window.addEventListener("keydown", (e) => {
     if (gateway.style.display !== "none" && !gateway.classList.contains("dismissed")) {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        dismissGateway(false);
+        launchCinematicVideo();
       }
     }
   });
 
+  // Skip link directly opens main page
+  skipBtn?.addEventListener("click", dismissImmediately);
+
   // Clicking brand badge in header re-opens the gateway
   brandBadgeBtn?.addEventListener("click", openGateway);
 
-  // Initial populate and trigger
+  // Initial populate
   updateGatewayData();
 
   if (isSkipIntro) {
-    dismissGateway(true);
-  } else {
-    startCountdown();
+    dismissImmediately();
   }
 }
 

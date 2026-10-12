@@ -22,86 +22,103 @@
   <div class="wallpaper-overlay" id="wallpaperOverlay"></div>
 
   <!-- ========================================================
-       INTRO ANIMATION GATEWAY (Suitable for Phone & Laptop)
+       CINEMATIC 2-SECOND VIDEO INTRO (Phone & Laptop Optimized)
        ======================================================== -->
   <div class="intro-gateway" id="introGateway">
     <!-- Ambient glowing backdrop lighting -->
     <div class="intro-aura intro-aura-gold"></div>
     <div class="intro-aura intro-aura-blue"></div>
 
-    <div class="intro-card">
-      <!-- Animated Spinning & Pulsing Emblem -->
-      <div class="intro-emblem-wrap">
-        <div class="intro-ring intro-ring-outer"></div>
-        <div class="intro-ring intro-ring-inner"></div>
-        <div class="intro-emblem-icon">
-          <span>⚡</span>
-        </div>
-      </div>
+    <!-- Cinematic Widescreen Letterbox Bars (Anamorphic 2s Video Look) -->
+    <div class="cinema-bar cinema-bar-top" id="cinemaBarTop"></div>
+    <div class="cinema-bar cinema-bar-bottom" id="cinemaBarBottom"></div>
 
-      <!-- Hero Typography with metallic shine -->
+    <!-- Cinematic Shutter Flash at 2.0s mark -->
+    <div class="intro-cinema-flash" id="introCinemaFlash"></div>
+
+    <div class="intro-card" id="introCard">
+      <!-- Header Typography -->
       <div class="intro-header">
         <span class="intro-kicker" id="introGreeting">⚡ DAILY DISCIPLINE OS</span>
         <h1 class="intro-title">TRACKER</h1>
-        <p class="intro-subtitle">CONSISTENCY &bull; HABITS &bull; WORKOUTS</p>
+        <p class="intro-subtitle">CLICK IMAGE TO OPEN &bull; PHONE & LAPTOP READY</p>
       </div>
 
-      <!-- Live Discipline 3-Stat Pill Row -->
-      <div class="intro-status-grid">
-        <div class="intro-status-pill">
-          <span class="pill-icon">📅</span>
-          <div class="pill-text">
-            <span class="pill-label">TODAY</span>
-            <span class="pill-value" id="introDateVal">Day 12</span>
+      <!-- Hero Clickable Image Stage (Clicks to zoom big & launch 2s video animation) -->
+      <div class="intro-image-stage" id="introImageStage">
+        <div class="intro-image-wrapper" id="introImageTarget" role="button" tabindex="0" title="Click image to enter Tracker (2-second video animation)">
+          <!-- The Image that gets BIG -->
+          <img src="assets/gym_wallpaper.jpg" alt="Gym Discipline Wallpaper" class="intro-hero-image" id="introHeroImg">
+          
+          <!-- Cinematic Video Lighting & Vignette Overlay -->
+          <div class="intro-hero-vignette"></div>
+          <div class="intro-lens-streak"></div>
+
+          <!-- Video Camera OSD HUD Info -->
+          <div class="intro-video-hud">
+            <span class="hud-item rec-pill"><span class="rec-dot"></span>2s INTRO</span>
+            <span class="hud-item hud-gold" id="introStreakVal">🔥 Locked In</span>
+            <span class="hud-item" id="introDateVal">Day 12</span>
+          </div>
+
+          <!-- Video Play Emblem Overlay (Pulsing affordance) -->
+          <div class="intro-play-overlay" id="introPlayOverlay">
+            <div class="intro-play-pulse"></div>
+            <div class="intro-play-btn">
+              <span class="play-arrow">▶</span>
+            </div>
+            <div class="intro-play-caption">
+              <span class="caption-title">CLICK IMAGE TO ENTER</span>
+              <span class="caption-sub">⚡ 2-Second Cinematic Video Launch</span>
+            </div>
           </div>
         </div>
-        <div class="intro-status-pill">
-          <span class="pill-icon">🔥</span>
-          <div class="pill-text">
-            <span class="pill-label">STREAK</span>
-            <span class="pill-value" id="introStreakVal">Locked In</span>
-          </div>
-        </div>
-        <div class="intro-status-pill">
-          <span class="pill-icon">🎯</span>
-          <div class="pill-text">
-            <span class="pill-label">ROUTINE</span>
-            <span class="pill-value" id="introHabitsCount">Active</span>
+
+        <!-- Choice of Images / Themes (Click ANY image to zoom big & enter) -->
+        <div class="intro-thumbnails-row">
+          <span class="thumbs-label">SELECT COVER IMAGE:</span>
+          <div class="thumbs-items">
+            <button class="thumb-btn active" data-img="assets/gym_wallpaper.jpg" title="Gym Beast Wallpaper">
+              <img src="assets/gym_wallpaper.jpg" alt="Gym Beast">
+              <span>Gym Beast</span>
+            </button>
+            <button class="thumb-btn" data-preset="cyber" title="Cyber Discipline">
+              <div class="thumb-preset cyber-bg">⚡</div>
+              <span>Cyber Neon</span>
+            </button>
+            <button class="thumb-btn" data-preset="gold" title="Gold Champion Arc">
+              <div class="thumb-preset gold-bg">🏆</div>
+              <span>Gold Arc</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Motivational Discipline Quote -->
+      <!-- Motivational Quote -->
       <div class="intro-quote-card">
         <span class="quote-mark">“</span>
         <p id="introQuoteText">The pain of discipline is far less than the pain of regret.</p>
         <span class="quote-mark">”</span>
       </div>
 
-      <!-- High-Impact Enter Button & Options -->
-      <div class="intro-action-box">
-        <button class="btn-enter-tracker" id="enterTrackerBtn">
-          <span class="btn-shine"></span>
-          <span class="btn-icon">⚡</span>
-          <span class="btn-text">ENTER TRACKER</span>
-          <span class="btn-arrow">→</span>
-        </button>
-
-        <!-- Auto-launch progress countdown bar -->
-        <div class="intro-timer-row">
-          <div class="intro-timer-bar">
-            <div class="intro-timer-fill" id="introTimerFill"></div>
-          </div>
-          <span class="intro-timer-text" id="introTimerText">Launching in 4s...</span>
+      <!-- 2-Second Video Progress Timeline (Pure visual scrubber, NO seconds text) -->
+      <div class="intro-video-timeline" id="introVideoTimeline">
+        <div class="intro-timeline-bar">
+          <div class="intro-timeline-fill" id="introTimelineFill"></div>
         </div>
-
-        <div class="intro-options-row">
-          <label class="intro-toggle-label">
-            <input type="checkbox" id="showIntroEveryTimeCheck" checked>
-            <span>Show on launch</span>
-          </label>
-          <span class="intro-hint-desktop hide-sm">Press <strong>[Enter]</strong> or <strong>[Space]</strong></span>
+        <div class="intro-timeline-meta">
+          <span class="meta-item"><span class="meta-dot"></span>CINEMATIC VIDEO PLAYBACK</span>
+          <span class="meta-item">4K HDR &bull; 60 FPS</span>
         </div>
+      </div>
+
+      <!-- Bottom Options Row -->
+      <div class="intro-options-row">
+        <label class="intro-toggle-label">
+          <input type="checkbox" id="showIntroEveryTimeCheck" checked>
+          <span>Show on launch</span>
+        </label>
+        <button class="btn-skip-link" id="skipIntroBtn" title="Directly enter main page without animation">Direct Enter &rarr;</button>
       </div>
     </div>
   </div>
