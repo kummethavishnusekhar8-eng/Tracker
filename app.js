@@ -437,6 +437,11 @@ function setHabitCell(habitIdx, day, state) {
 }
 
 function renderSleepBody() {
+  renderSleepMatrixTable();
+  renderSleepGraph();
+}
+
+function renderSleepMatrixTable() {
   const sleepBody = document.getElementById("sleepBody");
   if (!sleepBody) return;
   sleepBody.innerHTML = "";
@@ -468,6 +473,7 @@ function renderSleepBody() {
           playAudioBeep(520, 0.08, "sine");
         }
         updateSleepDayCells(day);
+        renderSleepGraph();
         saveData();
         updateStats();
       });
@@ -491,6 +497,210 @@ function updateSleepDayCells(day) {
       cell.classList.remove("active-sleep");
     }
   });
+}
+
+// =========================================================
+// INTERACTIVE VISUAL SLEEP RECOVERY GRAPH
+// =========================================================
+function renderSleepGraph() {
+  const svg = document.getElementById("sleepTrendSvg");
+  const timeline = document.getElementById("sleepDaysTimeline");
+  if (!svg) return;
+
+  const width = 860;
+  const height = 170;
+  const padLeft = 32;
+  const padRight = 14;
+  const padTop = 18;
+  const padBottom = 24;
+
+  const chartWidth = width - padLeft - padRight;
+  const chartHeight = height - padTop - padBottom;
+
+  const minHours = 0;
+  const maxHours = 12;
+  const targetHours = getTargetSleepHours();
+
+  // Helper to map (day 1..31, hours 0..12) to (x, y)
+  const getX = (day) => padLeft + ((day - 1) / (TOTAL_DAYS - 1)) * chartWidth;
+  const getY = (hrs) => padTop + chartHeight - (Math.min(Math.max(hrs, 0), maxHours) / maxHours) * chartHeight;
+
+  // Compute metrics
+  const sleepEntries = Object.entries(trackerData.sleepGrid);
+  let totalHours = 0;
+  sleepEntries.forEach(([_, tierIdx]) => {
+    totalHours += SLEEP_TIERS[tierIdx].val;
+  });
+  const avgHours = sleepEntries.length > 0 ? (totalHours / sleepEntries.length).toFixed(1) : "--";
+
+  const avgEl = document.getElementById("sleepGraphAvgVal");
+  if (avgEl) avgEl.textContent = avgHours !== "--" ? `${avgHours} hrs` : "-- hrs";
+
+  const targetEl = document.getElementById("sleepGraphTargetVal");
+  if (targetEl) targetEl.textContent = `${targetHours.toFixed(1)} hrs`;
+
+  const qualityEl = document.getElementById("sleepGraphQualityVal");
+  if (qualityEl) {
+    if (avgHours === "--") {
+      qualityEl.textContent = "No Data";
+      qualityEl.style.color = "#94a3b8";
+    } else {
+      const avgNum = parseFloat(avgHours);
+      if (avgNum >= targetHours) {
+        qualityEl.textContent = "Optimal ⚡";
+        qualityEl.style.color = "#10b981";
+      } else if (avgNum >= targetHours - 1.0) {
+        qualityEl.textContent = "Good 👍";
+        qualityEl.style.color = "#38bdf8";
+      } else {
+        qualityEl.textContent = "Deficit ⚠️";
+        qualityEl.style.color = "#f43f5e";
+      }
+    }
+  }
+
+  // Build SVG Content
+  let svgHtml = `
+    <defs>
+      <linearGradient id="sleepAreaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0284c7" stop-opacity="0.32"/>
+        <stop offset="100%" stop-color="#0284c7" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+  `;
+
+  // Horizontal Grid Lines for 4, 6, 8, 10 hrs
+  [4, 6, 8, 10].forEach(h => {
+    const y = getY(h);
+    svgHtml += `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" class="sleep-grid-line"/>
+      <text x="${padLeft - 6}" y="${y + 3}" font-size="9" fill="#94a3b8" text-anchor="end" font-family="monospace">${h}h</text>
+    `;
+  });
+
+  // Target Guideline
+  const targetY = getY(targetHours);
+  svgHtml += `
+    <line x1="${padLeft}" y1="${targetY}" x2="${width - padRight}" y2="${targetY}" class="sleep-target-line"/>
+    <text x="${width - padRight - 4}" y="${targetY - 4}" font-size="9" fill="#d97706" font-weight="bold" text-anchor="end">Target: ${targetHours}h</text>
+  `;
+
+  // Bars & Points calculation
+  const points = [];
+  const barWidth = Math.max(8, (chartWidth / TOTAL_DAYS) * 0.65);
+
+  for (let day = 1; day <= TOTAL_DAYS; day++) {
+    const x = getX(day);
+    const tierIdx = trackerData.sleepGrid[day];
+    const isDayToday = isToday(day);
+
+    if (tierIdx !== undefined) {
+      const hours = SLEEP_TIERS[tierIdx].val;
+      const y = getY(hours);
+      const barH = (padTop + chartHeight) - y;
+      points.push({ day, x, y, hours });
+
+      let barClass = "sleep-bar";
+      if (hours >= targetHours) barClass += " optimal";
+      else if (hours < 6) barClass += " deficit";
+
+      svgHtml += `
+        <rect x="${x - barWidth / 2}" y="${y}" width="${barWidth}" height="${barH}" rx="3" class="${barClass}" onclick="promptDaySleep(${day})">
+          <title>Day ${day}: ${hours} Hours Slept</title>
+        </rect>
+        <text x="${x}" y="${y - 4}" font-size="8.5" fill="#0284c7" font-weight="bold" text-anchor="middle">${hours}</text>
+      `;
+    } else {
+      // Empty column placeholder for click-to-log
+      svgHtml += `
+        <rect x="${x - barWidth / 2}" y="${padTop}" width="${barWidth}" height="${chartHeight}" fill="transparent" class="sleep-col-tap" style="cursor: pointer;" onclick="promptDaySleep(${day})">
+          <title>Click to log sleep for Day ${day}</title>
+        </rect>
+      `;
+    }
+
+    // Today indicator marker on baseline
+    if (isDayToday) {
+      svgHtml += `
+        <circle cx="${x}" cy="${padTop + chartHeight + 12}" r="3.5" fill="#f59e0b"/>
+      `;
+    }
+  }
+
+  // Smooth Area & Trend Line over logged points
+  if (points.length >= 2) {
+    let dPath = `M ${points[0].x} ${points[0].y}`;
+    let dArea = `M ${points[0].x} ${padTop + chartHeight} L ${points[0].x} ${points[0].y}`;
+
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const cur = points[i];
+      const cpX = (prev.x + cur.x) / 2;
+      dPath += ` C ${cpX} ${prev.y}, ${cpX} ${cur.y}, ${cur.x} ${cur.y}`;
+      dArea += ` C ${cpX} ${prev.y}, ${cpX} ${cur.y}, ${cur.x} ${cur.y}`;
+    }
+
+    const last = points[points.length - 1];
+    dArea += ` L ${last.x} ${padTop + chartHeight} Z`;
+
+    svgHtml += `
+      <path d="${dArea}" fill="url(#sleepAreaGrad)"/>
+      <path d="${dPath}" class="sleep-trend-path"/>
+    `;
+  }
+
+  // Dots over logged days
+  points.forEach(p => {
+    svgHtml += `
+      <circle cx="${p.x}" cy="${p.y}" r="4" class="sleep-graph-dot" onclick="promptDaySleep(${p.day})">
+        <title>Day ${p.day}: ${p.hours} hrs</title>
+      </circle>
+    `;
+  });
+
+  svg.innerHTML = svgHtml;
+
+  // Timeline Day Buttons below chart
+  if (timeline) {
+    timeline.innerHTML = "";
+    for (let day = 1; day <= TOTAL_DAYS; day++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sleep-day-btn";
+      if (trackerData.sleepGrid[day] !== undefined) btn.classList.add("has-sleep");
+      if (isToday(day)) btn.classList.add("today-day");
+      btn.textContent = day;
+      btn.title = `Day ${day}: ${trackerData.sleepGrid[day] !== undefined ? SLEEP_TIERS[trackerData.sleepGrid[day]].label : "Tap to set sleep"}`;
+      btn.addEventListener("click", () => promptDaySleep(day));
+      timeline.appendChild(btn);
+    }
+  }
+}
+
+// 1-Click Interactive Sleep Picker for any day
+function promptDaySleep(day) {
+  const currentTier = trackerData.sleepGrid[day];
+  const currentLabel = currentTier !== undefined ? SLEEP_TIERS[currentTier].label : "Not set";
+  
+  // Quick cycle or prompt
+  const options = SLEEP_TIERS.map((t, idx) => `${idx + 1}: ${t.label}`).join("\n");
+  const input = prompt(`Enter sleep for Day ${day} (Currently: ${currentLabel}):\n\n${options}\n0: Clear sleep`, currentTier !== undefined ? currentTier + 1 : "3");
+  
+  if (input === null) return;
+  const choice = parseInt(input.trim(), 10);
+  if (choice === 0) {
+    delete trackerData.sleepGrid[day];
+  } else if (choice >= 1 && choice <= SLEEP_TIERS.length) {
+    trackerData.sleepGrid[day] = choice - 1;
+    playAudioBeep(640, 0.1, "sine");
+  } else {
+    return;
+  }
+
+  updateSleepDayCells(day);
+  renderSleepGraph();
+  saveData();
+  updateStats();
 }
 
 // 1-Click: Mark Today's Habits Complete
@@ -1640,14 +1850,37 @@ function setupEventListeners() {
     updateWaterUI();
   });
 
-  // Custom Sleep Goal
+  // Custom Sleep Goal & Graph View Toggles
   sleepGoalInput?.addEventListener("change", () => {
     updateStats();
+    renderSleepGraph();
     saveData();
   });
   sleepGoalInput?.addEventListener("input", () => {
     updateStats();
+    renderSleepGraph();
     saveData();
+  });
+
+  const sleepGraphBtn = document.getElementById("sleepViewGraphBtn");
+  const sleepGridBtn = document.getElementById("sleepViewGridBtn");
+  const sleepGraphWrap = document.getElementById("sleepGraphContainer");
+  const sleepTableWrap = document.getElementById("sleepTableWrap");
+
+  sleepGraphBtn?.addEventListener("click", () => {
+    sleepGraphBtn.classList.add("active");
+    sleepGridBtn?.classList.remove("active");
+    if (sleepGraphWrap) sleepGraphWrap.style.display = "flex";
+    if (sleepTableWrap) sleepTableWrap.style.display = "none";
+    renderSleepGraph();
+  });
+
+  sleepGridBtn?.addEventListener("click", () => {
+    sleepGridBtn.classList.add("active");
+    sleepGraphBtn?.classList.remove("active");
+    if (sleepGraphWrap) sleepGraphWrap.style.display = "none";
+    if (sleepTableWrap) sleepTableWrap.style.display = "block";
+    renderSleepMatrixTable();
   });
 
   // Quote Refresh

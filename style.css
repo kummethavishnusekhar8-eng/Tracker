@@ -772,6 +772,177 @@ body.classic-white .p-input-box textarea {
   margin: 0 auto;
 }
 
+/* =========================================================
+   SLEEP RECOVERY INTERACTIVE GRAPH & SVG STYLES
+   ========================================================= */
+.sleep-graph-container {
+  width: 100%;
+  background: #ffffff;
+  border: 1.5px solid var(--sheet-border);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #000000;
+}
+
+.sleep-graph-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.sleep-metric-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.sleep-metric-pill .pill-label {
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+}
+
+.sleep-metric-pill .pill-val {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.sleep-metric-pill .pill-val.text-blue { color: #0284c7; }
+.sleep-metric-pill .pill-val.text-gold { color: #d97706; }
+
+.sleep-graph-hint {
+  margin-left: auto;
+  font-size: 0.68rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.sleep-svg-wrapper {
+  width: 100%;
+  height: 165px;
+  position: relative;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.sleep-trend-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* SVG Chart Elements */
+.sleep-grid-line {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.sleep-target-line {
+  stroke: #f59e0b;
+  stroke-width: 1.5;
+  stroke-dasharray: 4, 3;
+}
+
+.sleep-area-fill {
+  fill: rgba(56, 189, 248, 0.22);
+}
+
+.sleep-trend-path {
+  fill: none;
+  stroke: #0284c7;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sleep-bar {
+  fill: rgba(14, 165, 233, 0.65);
+  cursor: pointer;
+  transition: fill 0.15s ease, transform 0.15s ease;
+}
+.sleep-bar:hover {
+  fill: #0284c7;
+}
+.sleep-bar.optimal {
+  fill: rgba(16, 185, 129, 0.75);
+}
+.sleep-bar.optimal:hover {
+  fill: #059669;
+}
+.sleep-bar.deficit {
+  fill: rgba(239, 68, 68, 0.7);
+}
+.sleep-bar.deficit:hover {
+  fill: #dc2626;
+}
+
+.sleep-graph-dot {
+  fill: #ffffff;
+  stroke: #0284c7;
+  stroke-width: 2;
+  cursor: pointer;
+  transition: transform 0.15s ease, r 0.15s ease;
+}
+.sleep-graph-dot:hover {
+  r: 5.5;
+  fill: #0284c7;
+  stroke: #ffffff;
+}
+
+/* Day labels under graph */
+.sleep-days-timeline {
+  display: grid;
+  grid-template-columns: repeat(31, 1fr);
+  gap: 1px;
+  width: 100%;
+  text-align: center;
+}
+
+.sleep-day-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #475569;
+  padding: 3px 0;
+  cursor: pointer;
+  border-radius: 3px;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.sleep-day-btn:hover {
+  background: #e2e8f0;
+  color: #000000;
+}
+.sleep-day-btn.has-sleep {
+  font-weight: 900;
+  color: #0284c7;
+}
+.sleep-day-btn.today-day {
+  background: #fef3c7;
+  color: #b45309;
+  font-weight: 900;
+}
+
+.sleep-view-toggles .banner-action-btn.active {
+  background: var(--gold-accent);
+  color: #000000;
+}
+
 /* Weekly Check-In */
 .weekly-grid {
   display: grid;
