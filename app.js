@@ -758,8 +758,11 @@ function applyZoom(scale, mode = "custom") {
 
 function calculateFitPageScale() {
   if (!sheetScrollContainer || !trackerSheet) return 1.0;
-  const availWidth = sheetScrollContainer.clientWidth - 24;
-  const availHeight = sheetScrollContainer.clientHeight - 24;
+  if (sheetScrollContainer.style.display === "none" || sheetScrollContainer.clientWidth === 0) {
+    return 1.0;
+  }
+  const availWidth = Math.max(sheetScrollContainer.clientWidth - 24, 320);
+  const availHeight = Math.max(window.innerHeight - 150, 400);
 
   const sheetWidth = trackerSheet.offsetWidth || 860;
   const sheetHeight = trackerSheet.offsetHeight || 1220;
@@ -767,14 +770,17 @@ function calculateFitPageScale() {
   const scaleX = availWidth / sheetWidth;
   const scaleY = availHeight / sheetHeight;
 
-  return Math.min(scaleX, scaleY, 1.2);
+  return Math.min(Math.max(Math.min(scaleX, scaleY), 0.4), 1.2);
 }
 
 function calculateFitWidthScale() {
   if (!sheetScrollContainer || !trackerSheet) return 1.0;
-  const availWidth = sheetScrollContainer.clientWidth - 24;
+  if (sheetScrollContainer.style.display === "none" || sheetScrollContainer.clientWidth === 0) {
+    return 1.0;
+  }
+  const availWidth = Math.max(sheetScrollContainer.clientWidth - 24, 320);
   const sheetWidth = trackerSheet.offsetWidth || 860;
-  return Math.min(availWidth / sheetWidth, 1.4);
+  return Math.min(Math.max(availWidth / sheetWidth, 0.4), 1.4);
 }
 
 function triggerFitPage() {
@@ -1931,11 +1937,7 @@ function setupMobileModeSwitcher() {
       if (todayCard) todayCard.style.display = "none";
       if (sheetContainer) {
         sheetContainer.style.display = "block";
-        if (window.innerWidth <= 768) {
-          applyZoom(1.0, "normal");
-        } else {
-          triggerFitPage();
-        }
+        applyZoom(1.0, "normal");
       }
     }
   }
@@ -1944,8 +1946,12 @@ function setupMobileModeSwitcher() {
   modeSheetBtn?.addEventListener("click", () => setMode("sheet"));
   document.getElementById("mobileCheckAllBtn")?.addEventListener("click", completeTodayHabits);
 
-  // Default view is 'today' (Daily Habits) across all devices (laptop & mobile)
-  setMode("today");
+  // Responsive default: Laptop/Desktop (> 768px) displays full Monthly Tracker Sheet; Mobile (<= 768px) displays Daily Habits
+  if (window.innerWidth > 768) {
+    setMode("sheet");
+  } else {
+    setMode("today");
+  }
 }
 
 // =========================================================
@@ -2112,10 +2118,8 @@ function setupIntroGateway() {
         gateway.style.display = "none";
         resetGatewayAnimation();
 
-        // Responsive fit check for desktop / mobile
-        if (window.innerWidth > 768) {
-          triggerFitPage();
-        }
+        // Responsive fit check for desktop / mobile: crisp 100% zoom
+        applyZoom(1.0, "normal");
       }, 300);
     }, 1100);
   }
@@ -2125,9 +2129,7 @@ function setupIntroGateway() {
     gateway.style.display = "none";
     gateway.classList.add("dismissed");
     resetGatewayAnimation();
-    if (window.innerWidth > 768) {
-      triggerFitPage();
-    }
+    applyZoom(1.0, "normal");
   }
 
   function openGateway() {
@@ -2137,21 +2139,43 @@ function setupIntroGateway() {
     gateway.classList.remove("dismissed");
   }
 
-  // Action: Clicking the Image expands it big and launches the 2s video animation!
-  imageTarget.addEventListener("click", launchCinematicVideo);
+  const introEnterBtn = document.getElementById("introEnterBtn");
 
-  // Keyboard support: Pressing Enter or Space clicks image and launches
+  // Action: Clicking the Image or Enter Button expands and launches
+  imageTarget.addEventListener("click", (e) => {
+    e.stopPropagation();
+    launchCinematicVideo();
+  });
+
+  introEnterBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    launchCinematicVideo();
+  });
+
+  // Clicking anywhere on the screen launches the tracker
+  gateway.addEventListener("click", (e) => {
+    if (e.target.closest("#skipIntroBtn")) return;
+    launchCinematicVideo();
+  });
+
+  // Keyboard support: Pressing Enter or Space launches; Esc skips directly
   window.addEventListener("keydown", (e) => {
     if (gateway.style.display !== "none" && !gateway.classList.contains("dismissed")) {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         launchCinematicVideo();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        dismissImmediately();
       }
     }
   });
 
   // Skip link directly opens main page
-  skipBtn?.addEventListener("click", dismissImmediately);
+  skipBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dismissImmediately();
+  });
 
   // Clicking brand badge in header re-opens the gateway
   brandBadgeBtn?.addEventListener("click", openGateway);
@@ -2183,9 +2207,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initCloudSync();
   }, 50);
 
-  if (window.innerWidth > 768) {
-    setTimeout(triggerFitPage, 100);
-  } else {
-    applyZoom(1.0, "normal");
-  }
+  // Open at clear, readable 100% scale across laptop & mobile
+  applyZoom(1.0, "normal");
 });

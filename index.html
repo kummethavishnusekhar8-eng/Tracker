@@ -16,7 +16,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="style.css?v=11.0">
+  <link rel="stylesheet" href="style.css?v=12.0">
 </head>
 <body class="wallpaper-theme">
 
@@ -31,6 +31,11 @@
     <!-- Ambient glowing backdrop lighting -->
     <div class="intro-aura intro-aura-gold"></div>
     <div class="intro-aura intro-aura-blue"></div>
+
+    <!-- Top-Right Skip Intro Button (Instant Access for Laptop & Phone) -->
+    <button class="intro-skip-corner-btn" id="skipIntroBtn" type="button" title="Skip Intro & Open Tracker Directly">
+      <span>✕ Skip</span>
+    </button>
 
     <!-- Cinematic Shutter Flash at 2.0s mark -->
     <div class="intro-cinema-flash" id="introCinemaFlash"></div>
@@ -56,6 +61,14 @@
         <span class="quote-mark">“</span>
         <p id="introQuoteText">The pain of discipline is far less than the pain of regret.</p>
         <span class="quote-mark">”</span>
+      </div>
+
+      <!-- 3. Primary Enter Action for Laptop & Phone -->
+      <div class="intro-actions-row">
+        <button class="intro-enter-btn" id="introEnterBtn" type="button">
+          <span>⚡ ENTER TRACKER</span>
+        </button>
+        <div class="intro-hint-text">Click anywhere or press Enter to launch</div>
       </div>
     </div>
   </div>
@@ -820,6 +833,6 @@
   </main>
 
   <script src="assets/peerjs.min.js"></script>
-  <script src="app.js?v=11.0"></script>
+  <script src="app.js?v=12.0"></script>
 </body>
 </html>

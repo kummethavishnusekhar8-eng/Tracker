@@ -1,11 +1,12 @@
 // Service Worker for 100% Offline PWA - No server required!
-const CACHE_NAME = 'tracker-app-v2';
+const CACHE_NAME = 'tracker-app-v3';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
   './manifest.json',
+  './assets/discipline_hero.jpg',
   './assets/gym_wallpaper.jpg',
   './assets/icon-192.svg',
   './assets/icon-512.svg'
@@ -36,14 +37,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Offline-first strategy
+  // Navigation requests: Network-first to always deliver the newest version on laptop & mobile
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match('./index.html');
+        })
+    );
+    return;
+  }
+
+  // Asset requests: Stale-while-revalidate (fast cache + background refresh)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        // Cache dynamic resources like fonts
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
         if (event.request.url.startsWith('http') && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -51,12 +66,9 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      }).catch(() => {
-        // If offline and request is an HTML page
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('./index.html');
-        }
-      });
+      }).catch(() => null);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
