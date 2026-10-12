@@ -1055,12 +1055,15 @@ function populateUIWithData() {
 }
 
 // =========================================================
-// REALTIME 24/7 CLOUD SYNC (Phone <-> Laptop with ZERO Server)
+// REALTIME LIVE SYNC (Phone <-> Laptop Dual-Channel Sync)
 // =========================================================
 const SYNC_ID_KEY = "tracker_cloud_sync_id";
 let currentSyncId = localStorage.getItem(SYNC_ID_KEY) || "";
 let lastCloudHash = "";
 let cloudPushTimer = null;
+let detectedLanUrl = "";
+let peer = null;
+let activePeerConns = [];
 
 function getCloudBundle() {
   return {
@@ -1086,6 +1089,49 @@ function applyCloudBundle(bundle) {
   }
 }
 
+async function getBestServerBase() {
+  if (window.location.protocol.startsWith("http")) {
+    return window.location.origin;
+  }
+  try {
+    const r = await fetch("http://localhost:3000/api/ip");
+    if (r.ok) return "http://localhost:3000";
+  } catch (e) {}
+  try {
+    const r2 = await fetch("http://127.0.0.1:3000/api/ip");
+    if (r2.ok) return "http://127.0.0.1:3000";
+  } catch (e) {}
+  return "http://localhost:3000";
+}
+
+async function resolveLanUrl() {
+  if (detectedLanUrl) return detectedLanUrl;
+  const base = await getBestServerBase();
+  try {
+    const res = await fetch(`${base}/api/ip`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.url) {
+        detectedLanUrl = json.url;
+        return detectedLanUrl;
+      }
+    }
+  } catch (e) {}
+
+  if (window.location.protocol.startsWith("http") && !window.location.hostname.includes("localhost") && window.location.hostname !== "127.0.0.1") {
+    detectedLanUrl = `${window.location.protocol}//${window.location.host}`;
+    return detectedLanUrl;
+  }
+
+  detectedLanUrl = "http://172.20.83.202:3000";
+  return detectedLanUrl;
+}
+
+async function getSyncShareUrl() {
+  const lanBase = await resolveLanUrl();
+  return `${lanBase}/#sync=${encodeURIComponent(currentSyncId)}`;
+}
+
 async function initCloudSync() {
   // Check if sync ID is in URL hash or query (e.g. from scanning QR code)
   const hash = window.location.hash || "";
@@ -1108,39 +1154,23 @@ async function initCloudSync() {
     }
   }
 
-  if (currentSyncId) {
-    await fetchFromCloud(true);
-  } else {
-    await createCloudObject();
+  // If no sync ID yet, create a default 4-digit code (e.g. 1234 or random 4-digit)
+  if (!currentSyncId) {
+    currentSyncId = Math.floor(1000 + Math.random() * 9000).toString();
+    localStorage.setItem(SYNC_ID_KEY, currentSyncId);
   }
 
-  updateCloudSyncUI();
+  await fetchFromCloud(true);
+  await updateCloudSyncUI();
+  initPeerSync();
   startCloudSyncPoll();
-}
-
-async function createCloudObject() {
-  try {
-    const res = await fetch("https://api.restful-api.dev/objects", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "tracker_sync", data: getCloudBundle() })
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json && json.id) {
-        currentSyncId = json.id;
-        localStorage.setItem(SYNC_ID_KEY, currentSyncId);
-        lastCloudHash = JSON.stringify(getCloudBundle());
-        updateCloudSyncUI();
-      }
-    }
-  } catch (err) {}
 }
 
 async function fetchFromCloud(force = false) {
   if (!currentSyncId) return;
+  const base = await getBestServerBase();
   try {
-    const res = await fetch(`https://api.restful-api.dev/objects/${currentSyncId}`);
+    const res = await fetch(`${base}/api/sync?code=${encodeURIComponent(currentSyncId)}`);
     if (res.ok) {
       const json = await res.json();
       if (json && json.data) {
@@ -1149,70 +1179,153 @@ async function fetchFromCloud(force = false) {
         if (remoteHash !== lastCloudHash && (remoteHash !== localHash || force)) {
           applyCloudBundle(json.data);
           lastCloudHash = remoteHash;
-          updateCloudStatusIndicator(true, "Synced with Cloud");
+          updateCloudStatusIndicator(true, "Live Synced");
+          return;
         }
       }
+      updateCloudStatusIndicator(true, "Live Synced");
     }
   } catch (err) {
-    updateCloudStatusIndicator(false, "Local Mode (Offline)");
+    if (activePeerConns.length > 0) {
+      updateCloudStatusIndicator(true, "P2P Synced");
+    } else {
+      updateCloudStatusIndicator(false, "Offline / Local");
+    }
   }
 }
 
+function broadcastPeerBundle(bundle) {
+  if (!activePeerConns || activePeerConns.length === 0) return;
+  const msg = JSON.stringify({ type: "SYNC_BUNDLE", bundle: bundle, time: Date.now() });
+  activePeerConns.forEach(conn => {
+    try {
+      if (conn && conn.open) conn.send(msg);
+    } catch (e) {}
+  });
+}
+
+function handlePeerData(rawData) {
+  try {
+    const parsed = typeof rawData === "string" ? JSON.parse(rawData) : rawData;
+    if (parsed && parsed.bundle) {
+      const remoteHash = JSON.stringify(parsed.bundle);
+      const localHash = JSON.stringify(getCloudBundle());
+      if (remoteHash !== localHash) {
+        applyCloudBundle(parsed.bundle);
+        lastCloudHash = remoteHash;
+        updateCloudStatusIndicator(true, "Live Synced (P2P)");
+      }
+    }
+  } catch (e) {}
+}
+
+function initPeerSync() {
+  if (typeof Peer === "undefined" || !currentSyncId) return;
+  try {
+    if (peer && !peer.destroyed) peer.destroy();
+  } catch (e) {}
+  activePeerConns = [];
+
+  const cleanCode = currentSyncId.toString().replace(/[^a-zA-Z0-9]/g, "");
+  const hostRoomId = `tracker_room_${cleanCode}`;
+
+  try {
+    peer = new Peer(hostRoomId, { debug: 0 });
+    peer.on("open", () => {
+      updateCloudStatusIndicator(true, "Live Sync Ready");
+    });
+    peer.on("connection", (conn) => {
+      activePeerConns.push(conn);
+      conn.on("open", () => {
+        conn.send(JSON.stringify({ type: "SYNC_BUNDLE", bundle: getCloudBundle() }));
+        updateCloudStatusIndicator(true, "Device Connected");
+      });
+      conn.on("data", handlePeerData);
+      conn.on("close", () => {
+        activePeerConns = activePeerConns.filter(c => c !== conn);
+      });
+    });
+    peer.on("error", (err) => {
+      if (err.type === "unavailable-id") {
+        try { peer.destroy(); } catch (e) {}
+        const clientPeer = new Peer(undefined, { debug: 0 });
+        clientPeer.on("open", () => {
+          const conn = clientPeer.connect(hostRoomId, { reliable: true });
+          conn.on("open", () => {
+            activePeerConns = [conn];
+            conn.send(JSON.stringify({ type: "SYNC_BUNDLE", bundle: getCloudBundle() }));
+            updateCloudStatusIndicator(true, "Device Connected");
+          });
+          conn.on("data", handlePeerData);
+          conn.on("close", () => {
+            activePeerConns = [];
+          });
+        });
+        peer = clientPeer;
+      }
+    });
+  } catch (e) {}
+}
+
 function scheduleCloudPush() {
-  if (!currentSyncId) {
-    createCloudObject();
-    return;
-  }
+  if (!currentSyncId) return;
   clearTimeout(cloudPushTimer);
   cloudPushTimer = setTimeout(async () => {
     const bundle = getCloudBundle();
     const currentHash = JSON.stringify(bundle);
     if (currentHash === lastCloudHash) return;
 
+    // Push via PeerJS P2P
+    broadcastPeerBundle(bundle);
+
+    // Push to server /api/sync
+    const base = await getBestServerBase();
     try {
-      const res = await fetch(`https://api.restful-api.dev/objects/${currentSyncId}`, {
-        method: "PUT",
+      const res = await fetch(`${base}/api/sync?code=${encodeURIComponent(currentSyncId)}`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "tracker_sync", data: bundle })
+        body: JSON.stringify({ data: bundle })
       });
       if (res.ok) {
         lastCloudHash = currentHash;
-        updateCloudStatusIndicator(true, "Saved to Cloud");
+        updateCloudStatusIndicator(true, "Live Synced");
       }
     } catch (err) {
-      updateCloudStatusIndicator(false, "Local Mode (Offline)");
+      if (activePeerConns.length > 0) {
+        lastCloudHash = currentHash;
+        updateCloudStatusIndicator(true, "P2P Synced");
+      } else {
+        updateCloudStatusIndicator(false, "Offline / Local");
+      }
     }
-  }, 300);
+  }, 120);
 }
 
 function updateCloudStatusIndicator(isOnline, text) {
   const syncLabel = document.getElementById("syncStatusLabel");
   const cloudText = document.getElementById("cloudStatusText");
-  if (syncLabel) syncLabel.textContent = isOnline ? "Cloud Synced" : "Offline";
-  if (cloudText) cloudText.textContent = text;
+  if (syncLabel) syncLabel.textContent = isOnline ? "Live Synced" : "Offline";
+  if (cloudText) cloudText.textContent = text || (isOnline ? "Live Sync Active" : "Offline / Local");
 }
 
-function updateCloudSyncUI() {
+async function updateCloudSyncUI() {
   const syncIdInput = document.getElementById("syncIdInput");
   const syncUrlInput = document.getElementById("syncUrlInput");
   const qrCodeImg = document.getElementById("qrCodeImg");
 
   if (!currentSyncId) return;
-
   if (syncIdInput) syncIdInput.value = currentSyncId;
 
-  // Build clean link with #sync=ID
-  const baseUrl = window.location.origin + window.location.pathname;
-  const syncUrl = `${baseUrl}#sync=${currentSyncId}`;
-  if (syncUrlInput) syncUrlInput.value = syncUrl;
+  const shareUrl = await getSyncShareUrl();
+  if (syncUrlInput) syncUrlInput.value = shareUrl;
 
   if (qrCodeImg) {
-    qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(syncUrl)}`;
+    qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}`;
   }
 }
 
 function startCloudSyncPoll() {
-  // Poll cloud quietly every 5 seconds so laptop and phone stay in sync
+  // Poll /api/sync every 1.5 seconds for instant updates across devices
   setInterval(() => {
     if (!document.hidden && currentSyncId) {
       const isTyping = document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA");
@@ -1220,15 +1333,43 @@ function startCloudSyncPoll() {
         fetchFromCloud();
       }
     }
-  }, 5000);
+  }, 1500);
 
-  // Instant refresh when user switches tab or unlocks phone
   window.addEventListener("focus", () => {
     if (currentSyncId) fetchFromCloud();
   });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && currentSyncId) fetchFromCloud();
   });
+}
+
+function copyDataCode() {
+  try {
+    const bundle = getCloudBundle();
+    const codeStr = btoa(unescape(encodeURIComponent(JSON.stringify(bundle))));
+    navigator.clipboard.writeText(codeStr).then(() => {
+      alert("✓ Data Code copied! You can paste this on your other device.");
+    }).catch(() => {
+      prompt("Copy your Data Code below:", codeStr);
+    });
+  } catch (e) {
+    alert("Could not copy data code.");
+  }
+}
+
+function pasteDataCode() {
+  const input = prompt("Paste your Data Code here:");
+  if (!input) return;
+  try {
+    const jsonStr = decodeURIComponent(escape(atob(input.trim())));
+    const bundle = JSON.parse(jsonStr);
+    applyCloudBundle(bundle);
+    saveData();
+    scheduleCloudPush();
+    alert("✓ Data code applied and synced successfully!");
+  } catch (e) {
+    alert("Invalid data code! Please check and try again.");
+  }
 }
 
 // Data Export & Import
@@ -1315,9 +1456,11 @@ function setupPhoneConnectModal() {
     if (!inputVal) return;
     currentSyncId = inputVal;
     localStorage.setItem(SYNC_ID_KEY, currentSyncId);
+    await updateCloudSyncUI();
+    initPeerSync();
     await fetchFromCloud(true);
-    updateCloudSyncUI();
-    alert("✓ Connected to Sync ID! Data has been synced.");
+    await scheduleCloudPush();
+    alert(`✓ Connected to pairing code: ${currentSyncId}! Data is synced.`);
   });
 
   syncNowBtn?.addEventListener("click", async () => {
@@ -1327,6 +1470,11 @@ function setupPhoneConnectModal() {
     syncNowBtn.textContent = "✓ Synced!";
     setTimeout(() => syncNowBtn.textContent = "🔄 Sync Now", 2000);
   });
+
+  document.getElementById("modalCopyCodeBtn")?.addEventListener("click", copyDataCode);
+  document.getElementById("modalPasteCodeBtn")?.addEventListener("click", pasteDataCode);
+  document.getElementById("cardCopyCodeBtn")?.addEventListener("click", copyDataCode);
+  document.getElementById("cardPasteCodeBtn")?.addEventListener("click", pasteDataCode);
 }
 
 // =========================================================
@@ -1459,7 +1607,7 @@ function setupEventListeners() {
 }
 
 // =========================================================
-// MOBILE MODE SWITCHER (Today's Checklist vs Full Month Table)
+// VIEW MODE SWITCHER (Daily Habits vs Monthly)
 // =========================================================
 function setupMobileModeSwitcher() {
   const modeTodayBtn = document.getElementById("modeTodayBtn");
@@ -1492,12 +1640,8 @@ function setupMobileModeSwitcher() {
   modeSheetBtn?.addEventListener("click", () => setMode("sheet"));
   document.getElementById("mobileCheckAllBtn")?.addEventListener("click", completeTodayHabits);
 
-  // Set default view: mobile starts in 'today' mode; desktop starts in 'sheet' mode
-  if (window.innerWidth <= 768) {
-    setMode("today");
-  } else {
-    setMode("sheet");
-  }
+  // Default view is 'today' (Daily Habits) across all devices (laptop & mobile)
+  setMode("today");
 }
 
 // =========================================================
@@ -1576,14 +1720,8 @@ function setupIntroGateway() {
   if (!gateway || !imageTarget) return;
 
   let isLaunching = false;
-  const isSkipIntro = localStorage.getItem("tracker_skip_intro") === "true";
-
-  if (showIntroCheck) {
-    showIntroCheck.checked = !isSkipIntro;
-    showIntroCheck.addEventListener("change", (e) => {
-      localStorage.setItem("tracker_skip_intro", e.target.checked ? "false" : "true");
-    });
-  }
+  // Always clear skip intro so intro page always appears on refresh
+  localStorage.removeItem("tracker_skip_intro");
 
   function updateGatewayData() {
     const greeting = document.getElementById("introGreeting");
@@ -1754,9 +1892,8 @@ function setupIntroGateway() {
   // Initial populate
   updateGatewayData();
 
-  if (isSkipIntro) {
-    dismissImmediately();
-  }
+  // Always show intro gateway on launch and page refresh
+  openGateway();
 }
 
 // Initial Boot

@@ -44,21 +44,24 @@ function getNetworkIps() {
   const addresses = [];
 
   for (const name of Object.keys(interfaces)) {
+    // Exclude virtual adapters
+    if (/virtual|vmnet|vbox|vethernet|hyper-v/i.test(name)) continue;
     for (const net of interfaces[name]) {
       // IPv4 and not internal loopback
       if (net.family === 'IPv4' || net.family === 4) {
-        if (!net.internal && !net.address.startsWith('169.254.')) {
+        if (!net.internal && !net.address.startsWith('169.254.') && !net.address.startsWith('192.168.56.')) {
           addresses.push({ interface: name, address: net.address });
         }
       }
     }
   }
 
-  // Sort preferred IPs: 192.168.x.x or 10.x.x.x, then 172.x.x.x
+  // Sort preferred IPs: Wi-Fi first, then 192.168.x.x or 10.x.x.x
   addresses.sort((a, b) => {
-    const isPreferred = (ip) => ip.startsWith('192.168.') || ip.startsWith('10.');
-    if (isPreferred(a.address) && !isPreferred(b.address)) return -1;
-    if (!isPreferred(a.address) && isPreferred(b.address)) return 1;
+    const isWifiA = /wi-fi|wifi|wireless|wlan/i.test(a.interface);
+    const isWifiB = /wi-fi|wifi|wireless|wlan/i.test(b.interface);
+    if (isWifiA && !isWifiB) return -1;
+    if (!isWifiA && isWifiB) return 1;
     return 0;
   });
 
@@ -136,6 +139,42 @@ const server = http.createServer(async (req, res) => {
       url: `http://${primaryIp}:${PORT}`
     });
     return;
+  }
+
+  if (pathname.startsWith('/api/sync')) {
+    const code = parsedUrl.searchParams.get('code') || 
+                 parsedUrl.searchParams.get('id') || 
+                 pathname.replace(/^\/api\/sync\/?/, '') || 
+                 'default';
+    const store = readStore();
+    if (!store.syncRooms) store.syncRooms = {};
+
+    if (req.method === 'GET') {
+      const roomEntry = store.syncRooms[code] || null;
+      sendJson(res, 200, { success: true, code, data: roomEntry ? roomEntry.bundle : null, updatedAt: roomEntry ? roomEntry.updatedAt : 0 });
+      return;
+    }
+
+    if (req.method === 'POST' || req.method === 'PUT') {
+      const body = await parseBody(req);
+      const bundle = body.data || body;
+      const now = Date.now();
+      store.syncRooms[code] = {
+        bundle: bundle,
+        updatedAt: now
+      };
+      if (bundle && bundle.trackerData) {
+        const ym = `${bundle.trackerData.year || 2026}_${bundle.trackerData.month || 'October'}`;
+        if (!store.months) store.months = {};
+        store.months[ym] = bundle.trackerData;
+      }
+      if (bundle && bundle.profile) {
+        store.athleteProfile = bundle.profile;
+      }
+      writeStore(store);
+      sendJson(res, 200, { success: true, message: 'Synced', code, updatedAt: now });
+      return;
+    }
   }
 
   if (pathname === '/api/data') {

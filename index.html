@@ -88,12 +88,9 @@
         </div>
       </div>
 
-      <!-- Bottom Options Row -->
+      <!-- Direct Enter Option -->
       <div class="intro-options-row">
-        <label class="intro-toggle-label">
-          <input type="checkbox" id="showIntroEveryTimeCheck" checked>
-          <span>Show on launch</span>
-        </label>
+        <span></span>
         <button class="btn-skip-link" id="skipIntroBtn" title="Directly enter main page">Enter &rarr;</button>
       </div>
     </div>
@@ -182,19 +179,23 @@
           </div>
         </div>
 
-        <!-- Cloud Sync ID Control -->
+        <!-- Cloud Sync & Pairing Code Control -->
         <div class="data-transfer-card">
           <div class="transfer-header">
-            <span>🔑 Cloud Sync ID</span>
+            <span>🔑 Pairing Code / Sync Number</span>
           </div>
           <div class="sync-id-row" style="display: flex; gap: 6px; margin: 8px 0;">
-            <input type="text" id="syncIdInput" class="styled-input" style="flex: 1; font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--gold-accent);" placeholder="Sync ID">
-            <button class="btn btn-sub btn-sm" id="setSyncIdBtn">Connect ID</button>
+            <input type="text" id="syncIdInput" class="styled-input" style="flex: 1; font-family: monospace; font-size: 0.95rem; font-weight: bold; color: var(--gold-accent);" placeholder="Enter any number (e.g. 1234)">
+            <button class="btn btn-sub btn-sm" id="setSyncIdBtn">Connect</button>
             <button class="btn btn-sub btn-sm" id="syncNowBtn">🔄 Sync Now</button>
           </div>
-          <p style="font-size: 0.75rem; color: #94a3b8;">
-            Both devices must use this same Sync ID. Any checkmark, habit, or workout edit saves to the cloud and updates both screens automatically!
+          <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px;">
+            Enter the same number on your iPhone and Laptop. Any change on your iPhone updates your laptop screen automatically in real time!
           </p>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-sub btn-sm" id="modalCopyCodeBtn" style="flex: 1;">📋 Copy Data Code</button>
+            <button class="btn btn-sub btn-sm" id="modalPasteCodeBtn" style="flex: 1;">📥 Paste Data Code</button>
+          </div>
         </div>
 
         <!-- 3-Step Guide -->
@@ -276,22 +277,22 @@
         </div>
       </div>
 
-      <!-- Mobile Mode Switcher (Today vs Sheet) -->
-      <div class="mobile-mode-switcher no-print" id="mobileModeSwitcher">
+      <!-- View Mode Switcher: Daily Habits vs Monthly (Laptop & Phone) -->
+      <div class="view-mode-switcher no-print" id="viewModeSwitcher">
         <button class="mode-pill active" id="modeTodayBtn">
-          <span>📱</span> Today's Checklist
+          <span>⚡</span> Daily Habits
         </button>
         <button class="mode-pill" id="modeSheetBtn">
-          <span>📅</span> Full Month Table
+          <span>📅</span> Monthly
         </button>
       </div>
 
-      <!-- Quick Mobile / Today's Focus Card (Optimal for iPhone Thumb Check & Edit) -->
+      <!-- Daily Habits Focus Card (Optimal for Laptop & Phone) -->
       <div class="mobile-today-card no-print" id="mobileTodayCard">
         <div class="today-card-header">
           <div>
             <div class="today-date-badge" id="todayDateLabel">Today: Day 12</div>
-            <h2 class="today-title">TODAY'S HABIT CHECKLIST</h2>
+            <h2 class="today-title">DAILY HABITS</h2>
           </div>
           <div class="today-actions">
             <button class="btn-sm btn-sub" id="mobileCheckAllBtn">⚡ Check All</button>
@@ -804,6 +805,7 @@
 
   </main>
 
+  <script src="assets/peerjs.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
