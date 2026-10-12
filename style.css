@@ -53,7 +53,7 @@ body {
   background-repeat: no-repeat;
   z-index: -2;
   filter: contrast(1.15) brightness(0.65);
-  transition: opacity 0.3s ease;
+  transform: translateZ(0);
 }
 
 .wallpaper-overlay {
@@ -62,10 +62,10 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: radial-gradient(circle at 50% 25%, rgba(10, 12, 18, 0.65) 0%, rgba(6, 8, 12, 0.94) 85%);
-  backdrop-filter: blur(2px);
+  background: radial-gradient(circle at 50% 25%, rgba(10, 12, 18, 0.72) 0%, rgba(6, 8, 12, 0.95) 85%);
   z-index: -1;
   pointer-events: none;
+  transform: translateZ(0);
 }
 
 /* Minimalist Dark Mode */
@@ -452,7 +452,6 @@ body.classic-white .p-input-box textarea {
 
 .sheet-scale-wrapper {
   transform-origin: top center;
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
   display: flex;
   justify-content: center;
   width: 100%;
@@ -599,6 +598,7 @@ body.classic-white .p-input-box textarea {
 .table-container {
   width: 100%;
   overflow-x: auto;
+  contain: paint;
 }
 
 .tracker-table {

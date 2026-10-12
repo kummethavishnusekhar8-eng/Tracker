@@ -1,5 +1,5 @@
 // Service Worker for 100% Offline PWA - No server required!
-const CACHE_NAME = 'tracker-app-v4';
+const CACHE_NAME = 'tracker-app-v5';
 const ASSETS = [
   './',
   './index.html',

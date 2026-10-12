@@ -125,21 +125,35 @@ function getStorageKey() {
 }
 
 // =========================================================
-// AUDIO SYNTHESIZER (Web Audio API)
+// AUDIO SYNTHESIZER (Optimized Shared AudioContext Singleton)
 // =========================================================
-function playAudioBeep(frequency = 880, duration = 0.15, type = "sine") {
+let sharedAudioCtx = null;
+function getSharedAudioContext() {
+  if (!sharedAudioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) sharedAudioCtx = new AudioCtx();
+  }
+  if (sharedAudioCtx && sharedAudioCtx.state === "suspended") {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+  return sharedAudioCtx;
+}
+
+function playAudioBeep(frequency = 880, duration = 0.12, type = "sine") {
   try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioCtx = getSharedAudioContext();
+    if (!audioCtx) return;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
+    const now = audioCtx.currentTime;
     osc.type = type;
-    osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.frequency.setValueAtTime(frequency, now);
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+    osc.start(now);
+    osc.stop(now + duration);
   } catch (e) {}
 }
 
@@ -424,11 +438,44 @@ function renderMobileChecklist() {
   });
 
   // Update mobile progress bar
-  const pct = Math.round((completedTodayCount / trackerData.habits.length) * 100);
+  updateMobileProgressBar();
+}
+
+function updateMobileProgressBar() {
+  const todayDay = new Date().getDate();
+  let count = 0;
+  trackerData.habits.forEach((_, idx) => {
+    if (trackerData.habitGrid[`${idx}_${todayDay}`]) count++;
+  });
+  const total = trackerData.habits.length || 1;
+  const pct = Math.round((count / total) * 100);
   const fill = document.getElementById("todayProgressFill");
   const text = document.getElementById("todayProgressText");
   if (fill) fill.style.width = `${pct}%`;
-  if (text) text.textContent = `${completedTodayCount} of ${trackerData.habits.length} habits completed today (${pct}%)`;
+  if (text) text.textContent = `${count} of ${trackerData.habits.length} habits completed today (${pct}%)`;
+}
+
+function updateMobileChecklistSingleItem(habitIdx, isCompleted) {
+  const items = document.querySelectorAll(".mobile-habit-item");
+  if (items[habitIdx]) {
+    items[habitIdx].classList.toggle("completed", isCompleted);
+    const btn = items[habitIdx].querySelector(".mobile-check-box");
+    if (btn) {
+      btn.classList.toggle("checked", isCompleted);
+      btn.innerHTML = isCompleted ? "✓" : "";
+    }
+  }
+  updateMobileProgressBar();
+}
+
+let batchSaveTimer = null;
+function requestBatchSave() {
+  if (batchSaveTimer) return;
+  batchSaveTimer = setTimeout(() => {
+    batchSaveTimer = null;
+    saveData();
+    updateStats();
+  }, 40);
 }
 
 function setHabitCell(habitIdx, day, state) {
@@ -443,9 +490,12 @@ function setHabitCell(habitIdx, day, state) {
     cell?.classList.remove("checked");
   }
 
-  renderMobileChecklist();
-  saveData();
-  updateStats();
+  const todayDay = new Date().getDate();
+  if (day === todayDay) {
+    updateMobileChecklistSingleItem(habitIdx, !!state);
+  }
+
+  requestBatchSave();
 }
 
 function renderSleepBody() {
@@ -1430,14 +1480,28 @@ async function initCloudSync() {
   startCloudSyncPoll();
 }
 
+let isServerApiAvailable = true;
+
 async function fetchFromCloud(force = false) {
   if (!currentSyncId) return;
+  if (!isServerApiAvailable) {
+    if (activePeerConns.length > 0) {
+      updateCloudStatusIndicator(true, "P2P Synced");
+    } else {
+      updateCloudStatusIndicator(false, "Offline / Local");
+    }
+    return;
+  }
   const base = await getBestServerBase();
   try {
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 800);
     const res = await fetch(`${base}/api/sync?code=${encodeURIComponent(currentSyncId)}`, { signal: ctrl.signal });
     clearTimeout(tid);
+    if (res.status === 404) {
+      isServerApiAvailable = false;
+      return;
+    }
     if (res.ok) {
       const json = await res.json();
       if (json && json.data) {
@@ -1545,25 +1609,30 @@ function scheduleCloudPush() {
     // Push via PeerJS P2P
     broadcastPeerBundle(bundle);
 
-    // Push to server /api/sync
-    const base = await getBestServerBase();
-    try {
-      const res = await fetch(`${base}/api/sync?code=${encodeURIComponent(currentSyncId)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: bundle })
-      });
-      if (res.ok) {
-        lastCloudHash = currentHash;
-        updateCloudStatusIndicator(true, "Live Synced");
-      }
-    } catch (err) {
-      if (activePeerConns.length > 0) {
-        lastCloudHash = currentHash;
-        updateCloudStatusIndicator(true, "P2P Synced");
-      } else {
-        updateCloudStatusIndicator(false, "Offline / Local");
-      }
+    // Push to server /api/sync if available
+    if (isServerApiAvailable) {
+      const base = await getBestServerBase();
+      try {
+        const res = await fetch(`${base}/api/sync?code=${encodeURIComponent(currentSyncId)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: bundle })
+        });
+        if (res.status === 404) {
+          isServerApiAvailable = false;
+        } else if (res.ok) {
+          lastCloudHash = currentHash;
+          updateCloudStatusIndicator(true, "Live Synced");
+          return;
+        }
+      } catch (err) {}
+    }
+
+    if (activePeerConns.length > 0) {
+      lastCloudHash = currentHash;
+      updateCloudStatusIndicator(true, "P2P Synced");
+    } else {
+      updateCloudStatusIndicator(false, "Offline / Local");
     }
   }, 1000);
 }
