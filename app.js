@@ -1338,12 +1338,11 @@ async function getBestServerBase() {
     return window.location.origin;
   }
   try {
-    const r = await fetch("http://localhost:3000/api/ip");
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 600);
+    const r = await fetch("http://localhost:3000/api/ip", { signal: ctrl.signal });
+    clearTimeout(tid);
     if (r.ok) return "http://localhost:3000";
-  } catch (e) {}
-  try {
-    const r2 = await fetch("http://127.0.0.1:3000/api/ip");
-    if (r2.ok) return "http://127.0.0.1:3000";
   } catch (e) {}
   return "http://localhost:3000";
 }
@@ -1352,7 +1351,10 @@ async function resolveLanUrl() {
   if (detectedLanUrl) return detectedLanUrl;
   const base = await getBestServerBase();
   try {
-    const res = await fetch(`${base}/api/ip`);
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 800);
+    const res = await fetch(`${base}/api/ip`, { signal: ctrl.signal });
+    clearTimeout(tid);
     if (res.ok) {
       const json = await res.json();
       if (json && json.url) {
@@ -1367,7 +1369,7 @@ async function resolveLanUrl() {
     return detectedLanUrl;
   }
 
-  detectedLanUrl = "http://172.20.83.202:3000";
+  detectedLanUrl = "http://10.100.123.198:3000";
   return detectedLanUrl;
 }
 
@@ -1404,8 +1406,8 @@ async function initCloudSync() {
     localStorage.setItem(SYNC_ID_KEY, currentSyncId);
   }
 
-  await fetchFromCloud(true);
-  await updateCloudSyncUI();
+  fetchFromCloud(true);
+  updateCloudSyncUI();
   initPeerSync();
   startCloudSyncPoll();
 }
@@ -1414,7 +1416,10 @@ async function fetchFromCloud(force = false) {
   if (!currentSyncId) return;
   const base = await getBestServerBase();
   try {
-    const res = await fetch(`${base}/api/sync?code=${encodeURIComponent(currentSyncId)}`);
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 800);
+    const res = await fetch(`${base}/api/sync?code=${encodeURIComponent(currentSyncId)}`, { signal: ctrl.signal });
+    clearTimeout(tid);
     if (res.ok) {
       const json = await res.json();
       if (json && json.data) {
@@ -2157,11 +2162,15 @@ document.addEventListener("DOMContentLoaded", () => {
   loadData();
   setRandomQuote();
   updateTimerDisplay();
-  initCloudSync();
   setupIntroGateway();
 
+  // Run cloud sync asynchronously in background without delaying screen opening
+  setTimeout(() => {
+    initCloudSync();
+  }, 50);
+
   if (window.innerWidth > 768) {
-    setTimeout(triggerFitPage, 150);
+    setTimeout(triggerFitPage, 100);
   } else {
     applyZoom(1.0, "normal");
   }
