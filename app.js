@@ -1645,7 +1645,7 @@ function setupMobileModeSwitcher() {
 }
 
 // =========================================================
-// CINEMATIC ULTRA-FAST 0.75S SOUND SYNTHESIZER (120HZ COMPATIBLE)
+// CINEMATIC BALANCED 1.1S SOUND SYNTHESIZER (120HZ COMPATIBLE)
 // =========================================================
 function playCinematicVideoSound() {
   try {
@@ -1654,35 +1654,35 @@ function playCinematicVideoSound() {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    // 1. Sub-bass cinematic riser sweep (75Hz -> 280Hz over 0.75s)
+    // 1. Sub-bass cinematic riser sweep (75Hz -> 280Hz over 1.1s)
     const subOsc = ctx.createOscillator();
     const subGain = ctx.createGain();
     subOsc.type = "sine";
     subOsc.frequency.setValueAtTime(75, now);
-    subOsc.frequency.exponentialRampToValueAtTime(320, now + 0.65);
+    subOsc.frequency.exponentialRampToValueAtTime(300, now + 0.95);
     subGain.gain.setValueAtTime(0.01, now);
-    subGain.gain.linearRampToValueAtTime(0.25, now + 0.45);
-    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+    subGain.gain.linearRampToValueAtTime(0.25, now + 0.65);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
     subOsc.connect(subGain);
     subGain.connect(ctx.destination);
     subOsc.start(now);
-    subOsc.stop(now + 0.75);
+    subOsc.stop(now + 1.1);
 
     // 2. Harmonic crystalline energy shimmer
     const shimmerOsc = ctx.createOscillator();
     const shimmerGain = ctx.createGain();
     shimmerOsc.type = "triangle";
     shimmerOsc.frequency.setValueAtTime(440, now);
-    shimmerOsc.frequency.exponentialRampToValueAtTime(920, now + 0.6);
+    shimmerOsc.frequency.exponentialRampToValueAtTime(900, now + 0.9);
     shimmerGain.gain.setValueAtTime(0.01, now);
-    shimmerGain.gain.linearRampToValueAtTime(0.12, now + 0.5);
-    shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+    shimmerGain.gain.linearRampToValueAtTime(0.12, now + 0.7);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
     shimmerOsc.connect(shimmerGain);
     shimmerGain.connect(ctx.destination);
     shimmerOsc.start(now);
-    shimmerOsc.stop(now + 0.75);
+    shimmerOsc.stop(now + 1.1);
 
-    // 3. Crisp resolution impact chime at 0.6s
+    // 3. Crisp resolution impact chime at 0.95s
     setTimeout(() => {
       try {
         const impactCtx = new AudioCtx();
@@ -1698,7 +1698,7 @@ function playCinematicVideoSound() {
         impactOsc.start(t);
         impactOsc.stop(t + 0.35);
       } catch (err) {}
-    }, 600);
+    }, 950);
   } catch (e) {}
 }
 
@@ -1776,30 +1776,30 @@ function setupIntroGateway() {
     }
   }
 
-  // Fast & Snappy 0.75-Second Cinematic Launch sequence (120Hz smooth)
+  // Balanced 1.1-Second Cinematic Launch sequence (smooth natural pace)
   function launchCinematicVideo() {
     if (isLaunching) return;
     isLaunching = true;
 
-    // Start snappy sound effect
+    // Start sound effect
     playCinematicVideoSound();
 
     // 1. Image pushes forward smoothly into viewport
     gateway.classList.add("is-playing-video");
     imageTarget.classList.add("is-zooming-big");
 
-    // 2. Timeline scrubber fills smoothly over 0.75s (if present)
+    // 2. Timeline scrubber fills smoothly over 1.1s (if present)
     if (timelineFill) {
-      timelineFill.style.transition = "width 0.75s cubic-bezier(0.16, 1, 0.3, 1)";
+      timelineFill.style.transition = "width 1.1s cubic-bezier(0.18, 0.88, 0.25, 1)";
       timelineFill.style.width = "100%";
     }
 
-    // 3. Cinematic white shutter flash at 0.6s
+    // 3. Cinematic white shutter flash at 0.95s
     setTimeout(() => {
       if (cinemaFlash) cinemaFlash.classList.add("active");
-    }, 600);
+    }, 950);
 
-    // 4. Open Main Page smoothly at 0.75s
+    // 4. Open Main Page smoothly at 1.1s
     setTimeout(() => {
       gateway.classList.add("dismissed");
       if (cinemaFlash) cinemaFlash.classList.remove("active");
@@ -1812,8 +1812,8 @@ function setupIntroGateway() {
         if (window.innerWidth > 768) {
           triggerFitPage();
         }
-      }, 250);
-    }, 750);
+      }, 300);
+    }, 1100);
   }
 
   function dismissImmediately() {
