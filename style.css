@@ -2108,6 +2108,12 @@ body.blank-mode textarea {
   pointer-events: none;
 }
 
+/* Stop infinite animations when intro is hidden to free CPU/GPU */
+.intro-gateway.dismissed .intro-aura,
+.intro-gateway.dismissed .neon-tunnel-glow {
+  animation: none !important;
+}
+
 /* Shutter Flash Reveal */
 .intro-cinema-flash {
   position: fixed;

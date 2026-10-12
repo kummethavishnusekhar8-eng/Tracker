@@ -96,6 +96,18 @@ let trackerData = {
   macros: { calories: "", protein: "", carbs: "", fats: "", dietNotes: "" }
 };
 
+// Debounce utility to prevent excessive calls
+function debounce(fn, delay) {
+  let timer = null;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// Debounced version of saveData (300ms) — use for input events
+const debouncedSaveData = debounce(() => saveData(), 300);
+
 // Athlete Profile Persistence Data
 const PROFILE_KEY = "tracker_athlete_profile";
 let athleteProfile = {
@@ -1547,7 +1559,7 @@ function scheduleCloudPush() {
         updateCloudStatusIndicator(false, "Offline / Local");
       }
     }
-  }, 120);
+  }, 1000);
 }
 
 function updateCloudStatusIndicator(isOnline, text) {
@@ -1574,7 +1586,7 @@ async function updateCloudSyncUI() {
 }
 
 function startCloudSyncPoll() {
-  // Poll /api/sync every 1.5 seconds for instant updates across devices
+  // Poll /api/sync every 15 seconds (was 1.5s which caused page freeze on laptops)
   setInterval(() => {
     if (!document.hidden && currentSyncId) {
       const isTyping = document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA");
@@ -1582,7 +1594,7 @@ function startCloudSyncPoll() {
         fetchFromCloud();
       }
     }
-  }, 1500);
+  }, 15000);
 
   window.addEventListener("focus", () => {
     if (currentSyncId) fetchFromCloud();
@@ -1749,11 +1761,11 @@ function setupEventListeners() {
     "macroCalories", "macroProtein", "macroCarbs", "macroFats", "dietNotes"
   ];
   autoSaveIds.forEach(id => {
-    document.getElementById(id)?.addEventListener("input", saveData);
+    document.getElementById(id)?.addEventListener("input", debouncedSaveData);
   });
 
   document.querySelectorAll(".week-card input, .reflection-box input").forEach(inp => {
-    inp.addEventListener("input", saveData);
+    inp.addEventListener("input", debouncedSaveData);
   });
 
   // Month & Year Selector
@@ -1851,9 +1863,9 @@ function setupEventListeners() {
   waterGoalInput?.addEventListener("change", () => {
     updateWaterUI();
   });
-  waterGoalInput?.addEventListener("input", () => {
+  waterGoalInput?.addEventListener("input", debounce(() => {
     updateWaterUI();
-  });
+  }, 300));
 
   // Custom Sleep Goal & Graph View Toggles
   sleepGoalInput?.addEventListener("change", () => {
@@ -1861,11 +1873,11 @@ function setupEventListeners() {
     renderSleepGraph();
     saveData();
   });
-  sleepGoalInput?.addEventListener("input", () => {
+  sleepGoalInput?.addEventListener("input", debounce(() => {
     updateStats();
     renderSleepGraph();
     saveData();
-  });
+  }, 300));
 
   const sleepGraphBtn = document.getElementById("sleepViewGraphBtn");
   const sleepGridBtn = document.getElementById("sleepViewGridBtn");
