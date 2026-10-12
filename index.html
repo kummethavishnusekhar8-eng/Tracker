@@ -56,8 +56,8 @@
 
     <!-- Global Actions -->
     <div class="header-right">
-      <button class="btn btn-phone" id="phoneConnectBtn" title="How to access on iPhone without laptop">
-        <span>📱</span> <span class="hide-sm">iPhone Access</span>
+      <button class="btn btn-phone" id="phoneConnectBtn" title="Live Cloud Sync: iPhone & Laptop">
+        <span>☁️</span> <span id="syncStatusLabel" class="hide-sm">Sync Phone</span>
       </button>
       <button class="btn btn-theme" id="toggleThemeBtn" title="Change Theme Mode">
         <span id="themeIcon">🌓</span>
@@ -69,69 +69,75 @@
   </header>
 
   <!-- ========================================================
-       IPHONE / NO-SERVER ACCESS MODAL
+       LIVE CLOUD SYNC MODAL (Phone <-> Laptop)
        ======================================================== -->
   <div class="modal-backdrop no-print" id="phoneModal" style="display: none;">
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title-row">
-          <span class="modal-icon">📱</span>
+          <span class="modal-icon">☁️</span>
           <div>
-            <h3>Use on iPhone (No Laptop Needed!)</h3>
-            <p class="modal-subtitle">100% serverless — saves everything directly on your iPhone!</p>
+            <h3>Live Cloud Sync (Phone ↔ Laptop)</h3>
+            <p class="modal-subtitle">Update on phone ➔ immediately updates on your laptop!</p>
           </div>
         </div>
         <button class="modal-close-btn" id="closePhoneModalBtn">✕</button>
       </div>
 
       <div class="modal-body">
-        <div class="iphone-steps">
-          <div class="step-item">
-            <span class="step-num">1</span>
-            <div>
-              <strong>Host Free Online 24/7 (Recommended):</strong>
-              <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
-                Upload this tracker folder to free <strong>GitHub Pages</strong>, <strong>Vercel</strong>, or <strong>Netlify</strong>. You get a permanent link (e.g. <code>mytracker.vercel.app</code>) that is accessible 24/7 from your iPhone without ever touching your laptop again!
-              </p>
-            </div>
+        <!-- Live QR Code Card for 1-Scan Phone Linking -->
+        <div class="qr-container">
+          <div class="qr-box">
+            <img id="qrCodeImg" alt="Scan with iPhone" style="width: 150px; height: 150px; border-radius: 8px;">
           </div>
-          <div class="step-item">
-            <span class="step-num">2</span>
-            <div>
-              <strong>Install as Fullscreen iPhone App:</strong>
-              <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
-                Open the link in Safari on iPhone ➔ Tap Share (<span class="share-icon">⎋</span>) ➔ Tap <strong>"Add to Home Screen"</strong>. It installs with its own icon and runs 100% offline from phone storage!
-              </p>
+          <div class="url-copy-box">
+            <div class="sync-status-indicator">
+              <span class="sync-dot"></span> <strong id="cloudStatusText">Live Sync Active</strong>
             </div>
-          </div>
-          <div class="step-item">
-            <span class="step-num">3</span>
-            <div>
-              <strong>Modify & Delete Right from Phone:</strong>
-              <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
-                Add new habits, rename habits, delete habits (🗑️), check daily boxes, and track workouts. All changes stay permanently saved on your iPhone.
-              </p>
+            <p style="font-size: 0.78rem; color: #cbd5e1; margin: 6px 0;">
+              Point your iPhone Camera at this QR code to <strong>link your phone to this laptop instantly</strong>!
+            </p>
+            <div class="url-input-row">
+              <input type="text" id="syncUrlInput" readonly value="Loading sync link...">
+              <button class="btn btn-primary btn-sm" id="copySyncUrlBtn">📋 Copy Link</button>
             </div>
           </div>
         </div>
 
-        <!-- Quick 1-Click Data Transfer Section -->
+        <!-- Cloud Sync ID Control -->
         <div class="data-transfer-card">
           <div class="transfer-header">
-            <span>⚡ Quick Data Transfer (PC ↔ iPhone)</span>
+            <span>🔑 Cloud Sync ID</span>
           </div>
-          <p style="font-size: 0.76rem; color: #cbd5e1; margin-bottom: 8px;">
-            Want to copy your PC data to your iPhone without any server? Copy your Data Code below and paste it on your phone!
+          <div class="sync-id-row" style="display: flex; gap: 6px; margin: 8px 0;">
+            <input type="text" id="syncIdInput" class="styled-input" style="flex: 1; font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--gold-accent);" placeholder="Sync ID">
+            <button class="btn btn-sub btn-sm" id="setSyncIdBtn">Connect ID</button>
+            <button class="btn btn-sub btn-sm" id="syncNowBtn">🔄 Sync Now</button>
+          </div>
+          <p style="font-size: 0.75rem; color: #94a3b8;">
+            Both devices must use this same Sync ID. Any checkmark, habit, or workout edit saves to the cloud and updates both screens automatically!
           </p>
-          <div class="action-buttons-row">
-            <button class="btn btn-sub btn-sm" id="copyDataCodeBtn">📋 Copy Tracker Code</button>
-            <button class="btn btn-sub btn-sm" id="pasteDataCodeBtn">📥 Paste Tracker Code</button>
+        </div>
+
+        <!-- 3-Step Guide -->
+        <div class="iphone-steps">
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <div><strong>Scan QR on iPhone:</strong> Opens your tracker on your phone and automatically pairs to this laptop.</div>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <div><strong>Add to Home Screen:</strong> In iPhone Safari, tap Share (<span class="share-icon">⎋</span>) ➔ <strong>"Add to Home Screen"</strong> for fullscreen app mode.</div>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <div><strong>24/7 Cloud Sync:</strong> Check habits on your iPhone anytime — your laptop automatically updates!</div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-glow" id="dismissModalBtn">Got it!</button>
+        <button class="btn btn-glow" id="dismissModalBtn">Done</button>
       </div>
     </div>
   </div>

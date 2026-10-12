@@ -854,6 +854,7 @@ function saveProfile() {
     }
   }
 
+  scheduleCloudPush();
   playAudioBeep(880, 0.15, "triangle");
   alert("Profile Saved Successfully!");
 }
@@ -870,13 +871,14 @@ function clearProfile() {
     if (userNameInput) userNameInput.value = "";
     trackerData.name = "";
     saveData();
+    scheduleCloudPush();
 
     playAudioBeep(330, 0.2, "sawtooth");
   }
 }
 
 // =========================================================
-// 100% LOCAL DATA PERSISTENCE & LOAD
+// 100% LOCAL & REALTIME CLOUD DATA PERSISTENCE
 // =========================================================
 function saveData() {
   const userNameInput = document.getElementById("userNameInput");
@@ -933,6 +935,9 @@ function saveData() {
 
   // Save directly to device storage
   localStorage.setItem(getStorageKey(), JSON.stringify(trackerData));
+
+  // Auto-sync to cloud in background
+  scheduleCloudPush();
 }
 
 function loadData() {
@@ -1050,41 +1055,180 @@ function populateUIWithData() {
 }
 
 // =========================================================
-// QUICK DATA CODE TRANSFER (PC <-> iPhone without server)
+// REALTIME 24/7 CLOUD SYNC (Phone <-> Laptop with ZERO Server)
 // =========================================================
-function copyTrackerCode() {
-  const bundle = {
+const SYNC_ID_KEY = "tracker_cloud_sync_id";
+let currentSyncId = localStorage.getItem(SYNC_ID_KEY) || "";
+let lastCloudHash = "";
+let cloudPushTimer = null;
+
+function getCloudBundle() {
+  return {
     profile: athleteProfile,
     trackerData: trackerData,
-    date: new Date().toISOString()
+    month: currentMonth,
+    year: currentYear,
+    updatedAt: Date.now()
   };
-  const jsonStr = JSON.stringify(bundle);
-  navigator.clipboard.writeText(jsonStr).then(() => {
-    alert("✓ Tracker Code copied to clipboard!\nYou can paste this text on your iPhone (via WhatsApp, Notes, AirDrop, or email) to load all your data instantly!");
-  }).catch(() => {
-    prompt("Copy your Tracker Code below:", jsonStr);
-  });
 }
 
-function pasteTrackerCode() {
-  const code = prompt("Paste your Tracker Code here:");
-  if (!code) return;
-  try {
-    const bundle = JSON.parse(code.trim());
-    if (bundle.profile) {
-      athleteProfile = bundle.profile;
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(athleteProfile));
-      applyProfileToUI();
-    }
-    if (bundle.trackerData) {
-      applyDataToState(bundle.trackerData);
-      localStorage.setItem(getStorageKey(), JSON.stringify(trackerData));
-      populateUIWithData();
-    }
-    alert("✓ Tracker Code restored successfully!");
-  } catch (err) {
-    alert("Invalid Tracker Code. Please make sure you copied the full text.");
+function applyCloudBundle(bundle) {
+  if (!bundle) return;
+  if (bundle.profile) {
+    athleteProfile = bundle.profile;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(athleteProfile));
+    applyProfileToUI();
   }
+  if (bundle.trackerData) {
+    applyDataToState(bundle.trackerData);
+    localStorage.setItem(getStorageKey(), JSON.stringify(trackerData));
+    populateUIWithData();
+  }
+}
+
+async function initCloudSync() {
+  // Check if sync ID is in URL hash or query (e.g. from scanning QR code)
+  const hash = window.location.hash || "";
+  const search = window.location.search || "";
+  let paramId = "";
+  if (hash.includes("sync=")) {
+    paramId = hash.split("sync=")[1].split("&")[0];
+  } else if (search.includes("sync=")) {
+    paramId = search.split("sync=")[1].split("&")[0];
+  }
+
+  if (paramId) {
+    paramId = decodeURIComponent(paramId).trim();
+    if (paramId) {
+      currentSyncId = paramId;
+      localStorage.setItem(SYNC_ID_KEY, currentSyncId);
+      try {
+        history.replaceState(null, null, window.location.pathname);
+      } catch (e) {}
+    }
+  }
+
+  if (currentSyncId) {
+    await fetchFromCloud(true);
+  } else {
+    await createCloudObject();
+  }
+
+  updateCloudSyncUI();
+  startCloudSyncPoll();
+}
+
+async function createCloudObject() {
+  try {
+    const res = await fetch("https://api.restful-api.dev/objects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "tracker_sync", data: getCloudBundle() })
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.id) {
+        currentSyncId = json.id;
+        localStorage.setItem(SYNC_ID_KEY, currentSyncId);
+        lastCloudHash = JSON.stringify(getCloudBundle());
+        updateCloudSyncUI();
+      }
+    }
+  } catch (err) {}
+}
+
+async function fetchFromCloud(force = false) {
+  if (!currentSyncId) return;
+  try {
+    const res = await fetch(`https://api.restful-api.dev/objects/${currentSyncId}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.data) {
+        const remoteHash = JSON.stringify(json.data);
+        const localHash = JSON.stringify(getCloudBundle());
+        if (remoteHash !== lastCloudHash && (remoteHash !== localHash || force)) {
+          applyCloudBundle(json.data);
+          lastCloudHash = remoteHash;
+          updateCloudStatusIndicator(true, "Synced with Cloud");
+        }
+      }
+    }
+  } catch (err) {
+    updateCloudStatusIndicator(false, "Local Mode (Offline)");
+  }
+}
+
+function scheduleCloudPush() {
+  if (!currentSyncId) {
+    createCloudObject();
+    return;
+  }
+  clearTimeout(cloudPushTimer);
+  cloudPushTimer = setTimeout(async () => {
+    const bundle = getCloudBundle();
+    const currentHash = JSON.stringify(bundle);
+    if (currentHash === lastCloudHash) return;
+
+    try {
+      const res = await fetch(`https://api.restful-api.dev/objects/${currentSyncId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "tracker_sync", data: bundle })
+      });
+      if (res.ok) {
+        lastCloudHash = currentHash;
+        updateCloudStatusIndicator(true, "Saved to Cloud");
+      }
+    } catch (err) {
+      updateCloudStatusIndicator(false, "Local Mode (Offline)");
+    }
+  }, 300);
+}
+
+function updateCloudStatusIndicator(isOnline, text) {
+  const syncLabel = document.getElementById("syncStatusLabel");
+  const cloudText = document.getElementById("cloudStatusText");
+  if (syncLabel) syncLabel.textContent = isOnline ? "Cloud Synced" : "Offline";
+  if (cloudText) cloudText.textContent = text;
+}
+
+function updateCloudSyncUI() {
+  const syncIdInput = document.getElementById("syncIdInput");
+  const syncUrlInput = document.getElementById("syncUrlInput");
+  const qrCodeImg = document.getElementById("qrCodeImg");
+
+  if (!currentSyncId) return;
+
+  if (syncIdInput) syncIdInput.value = currentSyncId;
+
+  // Build clean link with #sync=ID
+  const baseUrl = window.location.origin + window.location.pathname;
+  const syncUrl = `${baseUrl}#sync=${currentSyncId}`;
+  if (syncUrlInput) syncUrlInput.value = syncUrl;
+
+  if (qrCodeImg) {
+    qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(syncUrl)}`;
+  }
+}
+
+function startCloudSyncPoll() {
+  // Poll cloud quietly every 5 seconds so laptop and phone stay in sync
+  setInterval(() => {
+    if (!document.hidden && currentSyncId) {
+      const isTyping = document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA");
+      if (!isTyping) {
+        fetchFromCloud();
+      }
+    }
+  }, 5000);
+
+  // Instant refresh when user switches tab or unlocks phone
+  window.addEventListener("focus", () => {
+    if (currentSyncId) fetchFromCloud();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && currentSyncId) fetchFromCloud();
+  });
 }
 
 // Data Export & Import
@@ -1131,19 +1275,21 @@ function setupBackupHandlers() {
 }
 
 // =========================================================
-// IPHONE / MOBILE INFO MODAL
+// CLOUD SYNC & PAIRING MODAL
 // =========================================================
 function setupPhoneConnectModal() {
   const phoneBtn = document.getElementById("phoneConnectBtn");
   const modal = document.getElementById("phoneModal");
   const closeBtn = document.getElementById("closePhoneModalBtn");
   const dismissBtn = document.getElementById("dismissModalBtn");
-  const copyDataCodeBtn = document.getElementById("copyDataCodeBtn");
-  const pasteDataCodeBtn = document.getElementById("pasteDataCodeBtn");
-  const cardCopyCodeBtn = document.getElementById("cardCopyCodeBtn");
-  const cardPasteCodeBtn = document.getElementById("cardPasteCodeBtn");
+  const copySyncUrlBtn = document.getElementById("copySyncUrlBtn");
+  const syncUrlInput = document.getElementById("syncUrlInput");
+  const syncIdInput = document.getElementById("syncIdInput");
+  const setSyncIdBtn = document.getElementById("setSyncIdBtn");
+  const syncNowBtn = document.getElementById("syncNowBtn");
 
   phoneBtn?.addEventListener("click", () => {
+    updateCloudSyncUI();
     modal.style.display = "flex";
   });
 
@@ -1154,10 +1300,33 @@ function setupPhoneConnectModal() {
     if (e.target === modal) closeModal();
   });
 
-  copyDataCodeBtn?.addEventListener("click", copyTrackerCode);
-  pasteDataCodeBtn?.addEventListener("click", pasteTrackerCode);
-  cardCopyCodeBtn?.addEventListener("click", copyTrackerCode);
-  cardPasteCodeBtn?.addEventListener("click", pasteTrackerCode);
+  copySyncUrlBtn?.addEventListener("click", () => {
+    if (syncUrlInput) {
+      syncUrlInput.select();
+      navigator.clipboard.writeText(syncUrlInput.value).then(() => {
+        copySyncUrlBtn.textContent = "✓ Copied!";
+        setTimeout(() => copySyncUrlBtn.textContent = "📋 Copy Link", 2000);
+      });
+    }
+  });
+
+  setSyncIdBtn?.addEventListener("click", async () => {
+    const inputVal = syncIdInput?.value.trim();
+    if (!inputVal) return;
+    currentSyncId = inputVal;
+    localStorage.setItem(SYNC_ID_KEY, currentSyncId);
+    await fetchFromCloud(true);
+    updateCloudSyncUI();
+    alert("✓ Connected to Sync ID! Data has been synced.");
+  });
+
+  syncNowBtn?.addEventListener("click", async () => {
+    syncNowBtn.textContent = "⏳ Syncing...";
+    await fetchFromCloud(true);
+    await scheduleCloudPush();
+    syncNowBtn.textContent = "✓ Synced!";
+    setTimeout(() => syncNowBtn.textContent = "🔄 Sync Now", 2000);
+  });
 }
 
 // =========================================================
@@ -1344,6 +1513,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadData();
   setRandomQuote();
   updateTimerDisplay();
+  initCloudSync();
 
   if (window.innerWidth > 768) {
     setTimeout(triggerFitPage, 150);
