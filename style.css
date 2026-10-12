@@ -2135,145 +2135,6 @@ body.blank-mode textarea {
   pointer-events: none;
 }
 
-/* Video HUD info in corners */
-.intro-video-hud {
-  position: absolute;
-  top: 10px;
-  left: 12px;
-  right: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  pointer-events: none;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  z-index: 3;
-}
-
-.hud-item {
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  padding: 3px 8px;
-  border-radius: 99px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
-  font-weight: 600;
-}
-
-.hud-item.hud-gold {
-  color: var(--gold-accent);
-  border-color: rgba(251, 191, 36, 0.35);
-}
-
-.rec-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  letter-spacing: 1px;
-}
-
-.rec-dot {
-  width: 7px;
-  height: 7px;
-  background-color: #ef4444;
-  border-radius: 50%;
-  box-shadow: 0 0 8px #ef4444;
-  animation: blinkRec 1s ease-in-out infinite;
-}
-
-@keyframes blinkRec {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-/* Play Badge Overlay */
-.intro-play-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(1.5px);
-  transition: opacity 0.25s ease, background 0.25s ease;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.intro-image-wrapper:hover .intro-play-overlay {
-  background: rgba(0, 0, 0, 0.18);
-}
-
-.intro-play-pulse {
-  position: absolute;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: 2px solid rgba(251, 191, 36, 0.7);
-  animation: playPulseRings 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-  pointer-events: none;
-}
-
-@keyframes playPulseRings {
-  0% { transform: scale(0.85); opacity: 0.9; }
-  100% { transform: scale(1.65); opacity: 0; }
-}
-
-.intro-play-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 60%, #d97706 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 25px rgba(251, 191, 36, 0.65), inset 0 2px 3px rgba(255, 255, 255, 0.4);
-  color: #05070c;
-  font-size: 1.55rem;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
-}
-
-.intro-image-wrapper:hover .intro-play-btn {
-  transform: scale(1.12);
-  box-shadow: 0 0 35px rgba(251, 191, 36, 0.9);
-}
-
-.intro-image-wrapper:active .intro-play-btn {
-  transform: scale(0.96);
-}
-
-.intro-play-btn .play-arrow {
-  margin-left: 3px;
-}
-
-.intro-play-caption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.caption-title {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  letter-spacing: 2px;
-  color: #ffffff;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
-}
-
-.caption-sub {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 1.2px;
-  color: var(--gold-accent);
-  text-transform: uppercase;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 2px 7px;
-  border-radius: 99px;
-}
-
 /* =========================================================
    "IMAGE GETS BIG" 2-SECOND CINEMATIC ANIMATION
    ========================================================= */
@@ -2315,12 +2176,6 @@ body.blank-mode textarea {
   filter: saturate(1.25);
 }
 
-.intro-image-wrapper.is-zooming-big .intro-play-overlay,
-.intro-image-wrapper.is-zooming-big .intro-video-hud {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
 
 .intro-image-wrapper.is-zooming-big .intro-lens-streak {
   opacity: 1;
@@ -2337,39 +2192,29 @@ body.blank-mode textarea {
 .intro-thumbnails-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
   width: 100%;
   margin-top: 2px;
-}
-
-.thumbs-label {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 1px;
-  color: #94a3b8;
-  font-weight: 700;
-  white-space: nowrap;
 }
 
 .thumbs-items {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1;
-  justify-content: flex-end;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .thumb-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 7px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #cbd5e1;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-family: var(--font-mono);
   font-weight: 600;
   cursor: pointer;
@@ -2470,30 +2315,6 @@ body.blank-mode textarea {
   transition: width 2.0s cubic-bezier(0.2, 0.85, 0.3, 1);
 }
 
-.intro-timeline-meta {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.65rem;
-  font-family: var(--font-mono);
-  color: #94a3b8;
-  letter-spacing: 0.5px;
-}
-
-.meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.meta-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: var(--gold-accent);
-  box-shadow: 0 0 6px var(--gold-accent);
-}
 
 /* Options & Skip Row */
 .intro-options-row {
@@ -2562,22 +2383,8 @@ body.blank-mode textarea {
   .intro-image-wrapper {
     height: 200px;
   }
-  .intro-play-btn {
-    width: 52px;
-    height: 52px;
-    font-size: 1.3rem;
-  }
-  .caption-title {
-    font-size: 1.1rem;
-  }
-  .intro-thumbnails-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
   .thumbs-items {
-    width: 100%;
-    justify-content: space-between;
+    gap: 6px;
   }
   .thumb-btn {
     flex: 1;
