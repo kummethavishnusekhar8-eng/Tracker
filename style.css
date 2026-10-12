@@ -47,12 +47,12 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url('assets/gym_wallpaper.jpg');
+  background-image: url('assets/discipline_hero.jpg');
   background-size: cover;
-  background-position: center 25%;
+  background-position: center 30%;
   background-repeat: no-repeat;
   z-index: -2;
-  filter: contrast(1.1) brightness(0.85);
+  filter: contrast(1.15) brightness(0.65);
   transition: opacity 0.3s ease;
 }
 
@@ -1989,77 +1989,231 @@ body.blank-mode textarea {
   100% { transform: scale(1.2); opacity: 0.32; }
 }
 
-/* Center Stage Container - Perfectly Centered with Equal Side Distribution */
+/* =========================================================
+   CINEMATIC INTRO: 360 EQUAL SIDES & NEW 360 WARP ANIMATION
+   ========================================================= */
+.intro-gateway {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.99) 0%, rgba(3, 5, 10, 1) 100%);
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
+  padding: clamp(16px, 4vw, 36px);
+  overflow: hidden;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.intro-gateway.dismissed {
+  opacity: 0;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+/* 2.0s Shutter Flash Reveal */
+.intro-cinema-flash {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  z-index: 100070;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+}
+.intro-cinema-flash.active {
+  opacity: 0.95;
+}
+
+/* Ambient 360 Background Auras */
+.intro-aura {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  opacity: 0.32;
+}
+
+.intro-aura-gold {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #fbbf24 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseAuraGold 5s ease-in-out infinite alternate;
+}
+
+.intro-aura-blue {
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, #38bdf8 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseAuraBlue 7s ease-in-out infinite alternate;
+}
+
+@keyframes pulseAuraGold {
+  0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.25; }
+  100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.45; }
+}
+
+@keyframes pulseAuraBlue {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.18; }
+  100% { transform: translate(-50%, -50%) scale(1.25); opacity: 0.36; }
+}
+
+/* Centered Stage: Equal 360 Sides Distribution */
 .intro-card {
   width: 100%;
-  max-width: 620px;
+  max-width: 560px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 20px;
+  gap: 26px;
   position: relative;
   z-index: 2;
   padding: 0;
   background: transparent;
   border: none;
   box-shadow: none;
-  animation: introCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: introCardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes introCardEntrance {
-  0% { opacity: 0; transform: translateY(18px) scale(0.97); }
+  0% { opacity: 0; transform: translateY(22px) scale(0.95); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* 1. The One Photo (Centered, equal side distribution, clicks to zoom big) */
+/* =========================================================
+   360 EQUAL SIDES PORTAL STAGE
+   ========================================================= */
+.intro-portal-stage {
+  position: relative;
+  width: clamp(260px, 40vmin, 340px);
+  height: clamp(260px, 40vmin, 340px);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* 360-Degree Continuous Rotating Conic Energy Ring */
+.intro-orbit-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #fbbf24 0%, #f59e0b 22%, #38bdf8 48%, #818cf8 74%, #fbbf24 100%);
+  filter: blur(10px);
+  opacity: 0.85;
+  animation: spin360Energy 7s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes spin360Energy {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 360-Degree Pulsing Radial Echo Ring */
+.intro-orbit-pulse {
+  position: absolute;
+  inset: -22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(251, 191, 36, 0.45);
+  animation: pulse360Ripples 3.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes pulse360Ripples {
+  0% {
+    transform: scale(0.94);
+    opacity: 0.8;
+    border-color: rgba(251, 191, 36, 0.6);
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 0.15;
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+  100% {
+    transform: scale(1.28);
+    opacity: 0;
+  }
+}
+
+/* 1. The One Photo: Symmetrical 360 Circular Portal (Clicks to Zoom Big) */
 .intro-image-wrapper {
   position: relative;
   width: 100%;
-  height: clamp(230px, 44vh, 350px);
-  margin: 0 auto;
-  border-radius: 20px;
+  height: 100%;
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   cursor: pointer;
-  border: 1.5px solid rgba(251, 191, 36, 0.45);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(251, 191, 36, 0.22);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 2px solid rgba(251, 191, 36, 0.85);
+  box-shadow: 0 0 45px rgba(251, 191, 36, 0.35), 0 25px 65px rgba(0, 0, 0, 0.95);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  z-index: 2;
   will-change: transform;
 }
 
 .intro-image-wrapper:hover {
-  transform: translateY(-4px) scale(1.02);
-  border-color: rgba(251, 191, 36, 0.9);
-  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.9), 0 0 45px rgba(251, 191, 36, 0.45);
+  transform: scale(1.04);
+  border-color: #fef08a;
+  box-shadow: 0 0 65px rgba(251, 191, 36, 0.6), 0 30px 80px rgba(0, 0, 0, 1);
 }
 
-.intro-image-wrapper:focus-visible {
-  outline: 2px solid var(--gold-accent);
-  outline-offset: 3px;
+.intro-image-wrapper:hover ~ .intro-orbit-ring {
+  filter: blur(14px);
+  opacity: 1;
+  animation-duration: 3.5s;
 }
 
 .intro-hero-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 25%;
-  transition: transform 0.4s ease, filter 0.4s ease;
+  object-position: center 20%;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.45s ease;
   will-change: transform;
 }
 
 .intro-image-wrapper:hover .intro-hero-image {
-  transform: scale(1.04);
+  transform: scale(1.06);
 }
 
 .intro-hero-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.65) 100%);
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.6) 100%);
+  border-radius: 50%;
   pointer-events: none;
+}
+
+.intro-reticle-ring {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px dashed rgba(251, 191, 36, 0.4);
+  pointer-events: none;
+  animation: reticleSpin 20s linear infinite reverse;
+}
+
+@keyframes reticleSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .intro-lens-streak {
@@ -2068,68 +2222,88 @@ body.blank-mode textarea {
   left: -50%;
   width: 200%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), rgba(251, 191, 36, 0.9), transparent);
-  box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);
-  opacity: 0.4;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.7), rgba(251, 191, 36, 1), transparent);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.9);
+  opacity: 0.45;
   transform: translateY(-50%) rotate(-3deg);
   pointer-events: none;
 }
 
-/* 2. Motivational Quotes Card - Centered with Equal Margins on Both Sides */
+/* 2. Motivational Quotes Card - Centered with Equal 360-degree Alignment */
 .intro-quote-card {
   width: 100%;
-  max-width: 520px;
+  max-width: 500px;
   margin: 0 auto;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 3px solid var(--gold-accent);
-  border-radius: 12px;
-  padding: 12px 18px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  gap: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(251, 191, 36, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease;
 }
 
 .intro-quote-card p {
   font-size: clamp(0.78rem, 1.8vw, 0.88rem);
   font-style: italic;
-  color: #e2e8f0;
-  line-height: 1.45;
+  color: #f1f5f9;
+  line-height: 1.4;
   margin: 0;
   text-align: center;
+  letter-spacing: 0.3px;
 }
 
 .intro-quote-card .quote-mark {
   color: var(--gold-accent);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 900;
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
 /* =========================================================
-   CINEMATIC 2-SECOND ZOOM ANIMATION
+   NEW STYLE ANIMATION: 360 WARP & EXPANSION (2 SECONDS)
    ========================================================= */
 .intro-gateway.is-playing-video .intro-quote-card {
   opacity: 0 !important;
-  transform: translateY(12px) scale(0.95) !important;
-  filter: blur(8px) !important;
+  transform: translateY(16px) scale(0.92) !important;
+  filter: blur(10px) !important;
   pointer-events: none !important;
 }
 
+.intro-gateway.is-playing-video .intro-orbit-pulse {
+  animation: shockwave360Burst 2.0s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes shockwave360Burst {
+  0% { transform: scale(1); opacity: 1; border-width: 3px; }
+  50% { transform: scale(3.5); opacity: 0.6; border-color: rgba(251, 191, 36, 0.9); }
+  100% { transform: scale(6.5); opacity: 0; border-width: 1px; }
+}
+
+.intro-gateway.is-playing-video .intro-orbit-ring {
+  animation: spin360VortexBurst 2.0s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes spin360VortexBurst {
+  0% { transform: rotate(0deg) scale(1); opacity: 0.85; filter: blur(10px); }
+  40% { transform: rotate(360deg) scale(1.6); opacity: 1; filter: blur(18px); }
+  100% { transform: rotate(1080deg) scale(5.5); opacity: 0; filter: blur(35px); }
+}
+
 .intro-image-wrapper.is-zooming-big {
-  border-color: rgba(251, 191, 36, 1) !important;
+  border-color: #fef08a !important;
   z-index: 100050 !important;
-  animation: singleHeroCinematicZoom 2.0s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: portal360WarpZoom 2.0s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 .intro-image-wrapper.is-zooming-big .intro-hero-image {
-  transform: scale(1.3) !important;
-  filter: saturate(1.3) brightness(1.2) !important;
+  transform: scale(1.4) !important;
+  filter: saturate(1.35) brightness(1.25) contrast(1.15) !important;
   transition: transform 2.0s cubic-bezier(0.16, 1, 0.3, 1), filter 2.0s ease !important;
 }
 
@@ -2138,30 +2312,30 @@ body.blank-mode textarea {
   animation: anamorphicSweep 2.0s ease-in-out infinite;
 }
 
-@keyframes singleHeroCinematicZoom {
+@keyframes portal360WarpZoom {
   0% {
-    transform: scale(1);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(251, 191, 36, 0.22);
-    border-radius: 20px;
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 0 45px rgba(251, 191, 36, 0.35), 0 25px 65px rgba(0, 0, 0, 0.95);
+    border-radius: 50%;
     filter: brightness(1) contrast(1);
   }
-  25% {
-    transform: scale(1.12);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 60px rgba(251, 191, 36, 0.55);
-    border-radius: 16px;
-    filter: brightness(1.15) contrast(1.05);
+  28% {
+    transform: scale(1.18) rotate(15deg);
+    box-shadow: 0 0 85px rgba(251, 191, 36, 0.8), 0 35px 95px rgba(0, 0, 0, 1);
+    border-radius: 50%;
+    filter: brightness(1.18) contrast(1.08);
   }
-  60% {
-    transform: scale(1.45);
-    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.95), 0 0 110px rgba(251, 191, 36, 0.85);
-    border-radius: 10px;
-    filter: brightness(1.28) contrast(1.1);
+  65% {
+    transform: scale(1.6) rotate(45deg);
+    box-shadow: 0 0 140px rgba(251, 191, 36, 1), 0 45px 120px rgba(0, 0, 0, 1);
+    border-radius: 40%;
+    filter: brightness(1.3) contrast(1.14);
   }
   100% {
-    transform: scale(3.2);
-    box-shadow: 0 0 160px rgba(251, 191, 36, 1);
-    border-radius: 2px;
-    filter: brightness(1.4) contrast(1.15);
+    transform: scale(4.5) rotate(90deg);
+    box-shadow: 0 0 240px rgba(251, 191, 36, 1);
+    border-radius: 10%;
+    filter: brightness(1.45) contrast(1.2);
   }
 }
 
@@ -2189,15 +2363,15 @@ body.blank-mode textarea {
   .intro-card {
     max-width: 100%;
     width: 100%;
-    gap: 16px;
+    gap: 20px;
   }
-  .intro-image-wrapper {
-    height: clamp(210px, 46vh, 280px);
-    border-radius: 16px;
+  .intro-portal-stage {
+    width: clamp(230px, 68vw, 290px);
+    height: clamp(230px, 68vw, 290px);
   }
   .intro-quote-card {
-    padding: 10px 14px;
-    max-width: 100%;
+    padding: 10px 18px;
+    max-width: 92%;
   }
   .intro-quote-card p {
     font-size: 0.76rem;

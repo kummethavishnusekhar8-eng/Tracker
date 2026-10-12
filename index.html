@@ -32,16 +32,26 @@
     <!-- Cinematic Shutter Flash at 2.0s mark -->
     <div class="intro-cinema-flash" id="introCinemaFlash"></div>
 
-    <!-- Centered Stage Container (Only One Photo & Quotes, Equal Side Distribution) -->
+    <!-- Centered Stage Container (Only One Photo & Quotes, Equal 360 Sides) -->
     <div class="intro-card" id="introCard">
-      <!-- 1. The One Photo (Click to zoom big & enter) -->
-      <div class="intro-image-wrapper" id="introImageTarget" role="button" tabindex="0" title="Click to enter Tracker">
-        <img src="assets/gym_wallpaper.jpg" alt="Gym Discipline" class="intro-hero-image" id="introHeroImg">
-        <div class="intro-hero-vignette"></div>
-        <div class="intro-lens-streak"></div>
+      <!-- 1. The One Photo with Equal 360 Sides & Rotating Energy Halo -->
+      <div class="intro-portal-stage">
+        <!-- 360-Degree Energy Orbit Rings -->
+        <div class="intro-orbit-pulse" id="introOrbitPulse"></div>
+        <div class="intro-orbit-ring" id="introOrbitRing"></div>
+
+        <!-- Symmetrical 360 Circular/Squircle Photo Portal -->
+        <div class="intro-image-wrapper" id="introImageTarget" role="button" tabindex="0" title="Click to enter Tracker">
+          <img src="assets/discipline_hero.jpg" alt="Discipline Warrior" class="intro-hero-image" id="introHeroImg">
+          <div class="intro-hero-vignette"></div>
+          <div class="intro-lens-streak"></div>
+          
+          <!-- Sleek Center Energy Reticle -->
+          <div class="intro-reticle-ring"></div>
+        </div>
       </div>
 
-      <!-- 2. The Quotes (Equally balanced & centered) -->
+      <!-- 2. The Quotes (Equally balanced & centered below 360 photo) -->
       <div class="intro-quote-card">
         <span class="quote-mark">“</span>
         <p id="introQuoteText">The pain of discipline is far less than the pain of regret.</p>
