@@ -162,9 +162,9 @@ function setupTabNavigation() {
         targetPanel.classList.add("active");
       }
 
-      // If switching to sheet tab, re-fit sheet
+      // If switching to sheet tab, ensure normal 100% zoom
       if (targetPanelId === "sheetTab") {
-        setTimeout(triggerFitPage, 100);
+        applyZoom(1.0, "normal");
       }
       // If switching to analytics, refresh stats
       if (targetPanelId === "analyticsTab") {
@@ -2027,6 +2027,13 @@ function setupIntroGateway() {
 
   if (!gateway || !imageTarget) return;
 
+  // Animation is strictly for phone/mobile only — NEVER show on laptop/desktop
+  if (window.innerWidth > 768) {
+    gateway.style.display = "none";
+    gateway.classList.add("dismissed");
+    return;
+  }
+
   let isLaunching = false;
   // Always clear skip intro so intro page always appears on refresh
   localStorage.removeItem("tracker_skip_intro");
@@ -2133,6 +2140,7 @@ function setupIntroGateway() {
   }
 
   function openGateway() {
+    if (window.innerWidth > 768) return; // Keep strictly for phone
     resetGatewayAnimation();
     updateGatewayData();
     gateway.style.display = "flex";
@@ -2200,7 +2208,17 @@ document.addEventListener("DOMContentLoaded", () => {
   loadData();
   setRandomQuote();
   updateTimerDisplay();
-  setupIntroGateway();
+  
+  // Animation strictly for phone — laptop opens directly to tracker
+  if (window.innerWidth <= 768) {
+    setupIntroGateway();
+  } else {
+    const gw = document.getElementById("introGateway");
+    if (gw) {
+      gw.style.display = "none";
+      gw.classList.add("dismissed");
+    }
+  }
 
   // Run cloud sync asynchronously in background without delaying screen opening
   setTimeout(() => {

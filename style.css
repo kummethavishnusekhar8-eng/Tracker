@@ -2108,6 +2108,17 @@ body.blank-mode textarea {
 /* =========================================================
    CINEMATIC INTRO: 360 EQUAL SIDES (120HZ HARDWARE-ACCELERATED)
    ========================================================= */
+/* Intro Animation: STRICTLY FOR PHONE ONLY — Completely hidden on Laptop/Desktop */
+@media (min-width: 769px) {
+  .intro-gateway,
+  .intro-cinema-flash {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+}
+
 .intro-gateway {
   position: fixed;
   inset: 0;
