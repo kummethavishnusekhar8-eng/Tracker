@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tracker">
+  <meta name="theme-color" content="#0a0c12">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icon-192.svg">
+  <title>TRACKER - Daily Discipline & Habit OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="wallpaper-theme">
+
+  <!-- Background Wallpaper Layer -->
+  <div class="wallpaper-background" id="wallpaperBg"></div>
+  <div class="wallpaper-overlay" id="wallpaperOverlay"></div>
+
+  <!-- ========================================================
+       TOP NAVIGATION BAR (Ultra-Clean & Streamlined)
+       ======================================================== -->
+  <header class="app-header no-print">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span class="bolt">⚡</span>
+        <span class="brand-text">TRACKER</span>
+      </div>
+      <div class="countdown-badge" id="countdownBadge">
+        <span class="fire">🔥</span> <span id="countdownText">Tracker Active: Day 12</span>
+      </div>
+    </div>
+
+    <!-- Central Tab Navigation (Eliminates Clutter!) -->
+    <nav class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" data-tab="sheetTab">
+        <span class="tab-icon">📄</span> <span class="tab-title">Tracker Sheet</span>
+      </button>
+      <button class="nav-tab" data-tab="workoutTab">
+        <span class="tab-icon">🏋️</span> <span class="tab-title">Workout Hub</span>
+      </button>
+      <button class="nav-tab" data-tab="nutritionTab">
+        <span class="tab-icon">💧</span> <span class="tab-title">Hydration & Fuel</span>
+      </button>
+      <button class="nav-tab" data-tab="analyticsTab">
+        <span class="tab-icon">📊</span> <span class="tab-title">Discipline Stats</span>
+      </button>
+      <button class="nav-tab" data-tab="profileTab">
+        <span class="tab-icon">👤</span> <span class="tab-title" id="navProfileName">Profile</span>
+      </button>
+    </nav>
+
+    <!-- Global Actions -->
+    <div class="header-right">
+      <button class="btn btn-phone" id="phoneConnectBtn" title="How to access on iPhone without laptop">
+        <span>📱</span> <span class="hide-sm">iPhone Access</span>
+      </button>
+      <button class="btn btn-theme" id="toggleThemeBtn" title="Change Theme Mode">
+        <span id="themeIcon">🌓</span>
+      </button>
+      <button class="btn btn-primary" id="printBtn" title="Print to Paper or Export PDF">
+        <span>🖨️</span> <span class="hide-sm">Print / PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================
+       IPHONE / NO-SERVER ACCESS MODAL
+       ======================================================== -->
+  <div class="modal-backdrop no-print" id="phoneModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <span class="modal-icon">📱</span>
+          <div>
+            <h3>Use on iPhone (No Laptop Needed!)</h3>
+            <p class="modal-subtitle">100% serverless — saves everything directly on your iPhone!</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="closePhoneModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="iphone-steps">
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <div>
+              <strong>Host Free Online 24/7 (Recommended):</strong>
+              <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
+                Upload this tracker folder to free <strong>GitHub Pages</strong>, <strong>Vercel</strong>, or <strong>Netlify</strong>. You get a permanent link (e.g. <code>mytracker.vercel.app</code>) that is accessible 24/7 from your iPhone without ever touching your laptop again!
+              </p>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <div>
+              <strong>Install as Fullscreen iPhone App:</strong>
+              <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
+                Open the link in Safari on iPhone ➔ Tap Share (<span class="share-icon">⎋</span>) ➔ Tap <strong>"Add to Home Screen"</strong>. It installs with its own icon and runs 100% offline from phone storage!
+              </p>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <div>
+              <strong>Modify & Delete Right from Phone:</strong>
+              <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
+                Add new habits, rename habits, delete habits (🗑️), check daily boxes, and track workouts. All changes stay permanently saved on your iPhone.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick 1-Click Data Transfer Section -->
+        <div class="data-transfer-card">
+          <div class="transfer-header">
+            <span>⚡ Quick Data Transfer (PC ↔ iPhone)</span>
+          </div>
+          <p style="font-size: 0.76rem; color: #cbd5e1; margin-bottom: 8px;">
+            Want to copy your PC data to your iPhone without any server? Copy your Data Code below and paste it on your phone!
+          </p>
+          <div class="action-buttons-row">
+            <button class="btn btn-sub btn-sm" id="copyDataCodeBtn">📋 Copy Tracker Code</button>
+            <button class="btn btn-sub btn-sm" id="pasteDataCodeBtn">📥 Paste Tracker Code</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-glow" id="dismissModalBtn">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MAIN APP CONTENT PANELS
+       ======================================================== -->
+  <main class="app-viewport">
+
+    <!-- ======================================================
+         TAB 1: TRACKER SHEET (Pruned, Focused, Accurate Zoom Fit)
+         ====================================================== -->
+    <section class="tab-panel active" id="sheetTab">
+      
+      <!-- Sub-Bar: Zoom & Sheet Controls -->
+      <div class="sheet-toolbar no-print">
+        <div class="sheet-meta-controls">
+          <div class="select-group">
+            <label for="monthSelect">Month:</label>
+            <select id="monthSelect">
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October" selected>October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+          </div>
+          <div class="select-group">
+            <label for="yearInput">Year:</label>
+            <input type="number" id="yearInput" value="2026" min="2024" max="2035">
+          </div>
+          <button class="btn-sub" id="checkTodayBtn" title="1-Click: Complete All Non-Negotiables for Today!">
+            <span>⚡</span> Mark Today Complete
+          </button>
+          <button class="btn-glow" id="addNewHabitBtn" title="Add a new habit row">
+            <span>➕</span> Add Habit
+          </button>
+        </div>
+
+        <!-- Accurate Zoom Controls -->
+        <div class="zoom-bar">
+          <span class="zoom-label">Zoom:</span>
+          <button class="zoom-btn" id="zoomOutBtn" title="Zoom Out (−)">−</button>
+          <span class="zoom-val" id="zoomLevelText">100%</span>
+          <button class="zoom-btn" id="zoomInBtn" title="Zoom In (+)">+</button>
+          <button class="zoom-pill active" id="zoomFitPageBtn" title="Fit Entire A4 Page to Screen">⛶ Fit Screen</button>
+          <button class="zoom-pill" id="zoomFitWidthBtn" title="Fit Sheet to Width">↔ Fit Width</button>
+          <button class="zoom-pill" id="zoomResetBtn" title="Reset to 100%">100%</button>
+          <button class="zoom-pill" id="blankModeBtn" title="Toggle Clean Blank Worksheet Mode">📄 Blank Sheet</button>
+          <button class="zoom-pill danger" id="clearDataBtn" title="Reset Current Month">🗑️ Reset</button>
+        </div>
+      </div>
+
+      <!-- Quick Mobile / Today's Focus Card (Optimal for iPhone Thumb Check & Edit) -->
+      <div class="mobile-today-card no-print" id="mobileTodayCard">
+        <div class="today-card-header">
+          <div>
+            <div class="today-date-badge" id="todayDateLabel">Today: Day 12</div>
+            <h2 class="today-title">TODAY'S HABIT CHECKLIST</h2>
+          </div>
+          <div class="today-actions">
+            <button class="btn-sm btn-glow" id="mobileAddHabitBtn">➕ Add</button>
+            <button class="btn-sm btn-sub" id="mobileToggleViewBtn">Toggle Sheet</button>
+          </div>
+        </div>
+
+        <div class="today-progress-bar-wrap">
+          <div class="today-progress-fill" id="todayProgressFill" style="width: 0%;"></div>
+        </div>
+        <div class="today-progress-text" id="todayProgressText">0 of 0 habits completed today (0%)</div>
+
+        <!-- Vertically stacked checklist items for iPhone -->
+        <div class="mobile-checklist" id="mobileChecklist">
+          <!-- Populated dynamically: Big checkboxes + editable title + delete button -->
+        </div>
+      </div>
+
+      <!-- Centered Scalable Sheet Wrapper -->
+      <div class="sheet-scroll-container" id="sheetScrollContainer">
+        <div class="sheet-scale-wrapper" id="sheetScaleWrapper">
+          <div class="tracker-sheet" id="trackerSheet">
+
+            <!-- Sheet Header -->
+            <div class="sheet-header">
+              <h1 class="arc-title">TRACKER</h1>
+              
+              <div class="header-meta-row">
+                <div class="meta-field name-field">
+                  <span class="meta-label">Name:</span>
+                  <input type="text" id="userNameInput" class="ruled-input" placeholder="Your Name" autocomplete="off">
+                </div>
+                <div class="meta-field month-field">
+                  <span class="meta-label">Month:</span>
+                  <input type="text" id="userMonthInput" class="ruled-input" placeholder="October" autocomplete="off">
+                </div>
+                <div class="meta-field day-field">
+                  <span class="meta-label">Day:</span>
+                  <input type="text" id="userDayInput" class="ruled-input" placeholder="Day 1" autocomplete="off">
+                </div>
+              </div>
+
+              <div class="main-goal-box">
+                <div class="main-goal-label">Main Goal:</div>
+                <textarea id="mainGoalInput" class="main-goal-textarea" rows="2" placeholder="Define your non-negotiable target for this month..."></textarea>
+              </div>
+            </div>
+
+            <!-- Section 1: Daily Habit Tracker -->
+            <div class="sheet-section" id="dailyHabitsSection">
+              <div class="section-banner">
+                <span>DAILY HABIT TRACKER</span>
+                <button class="banner-action-btn no-print" id="sheetAddHabitBtn" title="Add a new habit to the sheet">➕ Add Habit</button>
+              </div>
+              <div class="table-container">
+                <table class="tracker-table" id="habitsTable">
+                  <thead>
+                    <tr id="habitsHeaderRow">
+                      <th class="habit-col-header">Habit / Day</th>
+                      <!-- Days 1 to 31 populated by JS -->
+                    </tr>
+                  </thead>
+                  <tbody id="habitsBody">
+                    <!-- Dynamic Habit Rows with Modify & Delete -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Section 2: Sleep Tracker -->
+            <div class="sheet-section" id="sleepTrackerSection">
+              <div class="section-banner">SLEEP TRACKER</div>
+              <div class="table-container">
+                <table class="tracker-table" id="sleepTable">
+                  <thead>
+                    <tr id="sleepHeaderRow">
+                      <th class="sleep-col-header">Hours Slept / Day</th>
+                      <!-- Days 1 to 31 populated by JS -->
+                    </tr>
+                  </thead>
+                  <tbody id="sleepBody">
+                    <!-- Sleep Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Section 3: Weekly Check-In -->
+            <div class="sheet-section" id="weeklyCheckInSection">
+              <div class="section-banner">WEEKLY CHECK-IN</div>
+              <div class="weekly-grid">
+                
+                <!-- Week 1 -->
+                <div class="week-card" data-week="1">
+                  <div class="week-header">Week 1 (1 – 7)</div>
+                  <div class="week-weight-row">
+                    <span class="weight-label">Weight:</span>
+                    <input type="text" id="w1Weight" class="line-input" autocomplete="off">
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Wins:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w1Win1" class="line-input">
+                      <input type="text" id="w1Win2" class="line-input">
+                      <input type="text" id="w1Win3" class="line-input">
+                    </div>
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Focus for next week:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w1Focus1" class="line-input">
+                      <input type="text" id="w1Focus2" class="line-input">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Week 2 -->
+                <div class="week-card" data-week="2">
+                  <div class="week-header">Week 2 (8 – 14)</div>
+                  <div class="week-weight-row">
+                    <span class="weight-label">Weight:</span>
+                    <input type="text" id="w2Weight" class="line-input" autocomplete="off">
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Wins:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w2Win1" class="line-input">
+                      <input type="text" id="w2Win2" class="line-input">
+                      <input type="text" id="w2Win3" class="line-input">
+                    </div>
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Focus for next week:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w2Focus1" class="line-input">
+                      <input type="text" id="w2Focus2" class="line-input">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Week 3 -->
+                <div class="week-card" data-week="3">
+                  <div class="week-header">Week 3 (15 – 21)</div>
+                  <div class="week-weight-row">
+                    <span class="weight-label">Weight:</span>
+                    <input type="text" id="w3Weight" class="line-input" autocomplete="off">
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Wins:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w3Win1" class="line-input">
+                      <input type="text" id="w3Win2" class="line-input">
+                      <input type="text" id="w3Win3" class="line-input">
+                    </div>
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Focus for next week:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w3Focus1" class="line-input">
+                      <input type="text" id="w3Focus2" class="line-input">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Week 4 -->
+                <div class="week-card" data-week="4">
+                  <div class="week-header">Week 4 (22 – 28)</div>
+                  <div class="week-weight-row">
+                    <span class="weight-label">Weight:</span>
+                    <input type="text" id="w4Weight" class="line-input" autocomplete="off">
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Wins:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w4Win1" class="line-input">
+                      <input type="text" id="w4Win2" class="line-input">
+                      <input type="text" id="w4Win3" class="line-input">
+                    </div>
+                  </div>
+                  <div class="week-field">
+                    <span class="field-title">Focus for next week:</span>
+                    <div class="ruled-lines-box">
+                      <input type="text" id="w4Focus1" class="line-input">
+                      <input type="text" id="w4Focus2" class="line-input">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Section 4: Reflection & Next Month Target -->
+            <div class="sheet-section" id="reflectionSection">
+              <div class="section-banner">MONTHLY REVIEW & COMMITMENT</div>
+              <div class="reflection-grid">
+                <div class="reflection-box">
+                  <div class="reflection-label">What worked best this month?</div>
+                  <div class="ruled-lines-box">
+                    <input type="text" id="refWorked1" class="line-input">
+                    <input type="text" id="refWorked2" class="line-input">
+                    <input type="text" id="refWorked3" class="line-input">
+                  </div>
+                </div>
+                <div class="reflection-box">
+                  <div class="reflection-label">What held you back & how to fix it:</div>
+                  <div class="ruled-lines-box">
+                    <input type="text" id="refHeld1" class="line-input">
+                    <input type="text" id="refHeld2" class="line-input">
+                    <input type="text" id="refHeld3" class="line-input">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /.tracker-sheet -->
+        </div><!-- /.sheet-scale-wrapper -->
+      </div><!-- /.sheet-scroll-container -->
+
+    </section>
+
+    <!-- ======================================================
+         TAB 2: WORKOUT HUB (Workout Split, Log, PRs, Timer)
+         ====================================================== -->
+    <section class="tab-panel no-print" id="workoutTab">
+      <div class="dashboard-grid">
+
+        <!-- Split Selector Card -->
+        <div class="dash-card col-span-2">
+          <div class="dash-card-header">
+            <h3>🏋️ Training Protocol / Active Split</h3>
+            <span class="badge" id="currentSplitLabel">Push Day</span>
+          </div>
+          <div class="split-selector-bar">
+            <button class="split-btn active" data-split="Push (Chest, Shoulders, Triceps)">Push (Chest/Delts/Tri)</button>
+            <button class="split-btn" data-split="Pull (Back, Rear Delts, Biceps)">Pull (Back/Biceps)</button>
+            <button class="split-btn" data-split="Legs (Quads, Hamstrings, Calves)">Legs (Quads/Hams)</button>
+            <button class="split-btn" data-split="Upper Body Power">Upper Body</button>
+            <button class="split-btn" data-split="Lower Body & Core">Lower Body</button>
+            <button class="split-btn" data-split="Cardio & Conditioning">Cardio / Rest</button>
+          </div>
+          <div class="split-notes-box">
+            <label for="splitDetailInput">Today's Focus & Workout Notes:</label>
+            <input type="text" id="splitDetailInput" class="styled-input" placeholder="Heavy compound focus + strict form tempo">
+          </div>
+        </div>
+
+        <!-- Rest Interval Timer Card -->
+        <div class="dash-card timer-card">
+          <div class="dash-card-header">
+            <h3>⏱️ Gym Rest Timer</h3>
+          </div>
+          <div class="timer-display-box">
+            <div class="timer-numbers" id="timerDisplay">01:30</div>
+            <div class="timer-controls">
+              <button class="btn btn-glow" id="startTimerBtn">Start Rest</button>
+              <button class="btn btn-sub" id="resetTimerBtn">Reset</button>
+            </div>
+            <div class="timer-preset-pills">
+              <button class="t-pill" data-time="45">45s</button>
+              <button class="t-pill" data-time="60">60s</button>
+              <button class="t-pill active" data-time="90">90s</button>
+              <button class="t-pill" data-time="120">2m</button>
+              <button class="t-pill" data-time="180">3m</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exercise Logger Card -->
+        <div class="dash-card exercise-log-card">
+          <div class="dash-card-header">
+            <h3>📋 Today's Exercise Set Logger</h3>
+            <button class="btn-sm btn-sub" id="addExerciseRowBtn">➕ Add Exercise</button>
+          </div>
+          <div class="table-container exercise-table-wrap">
+            <table class="exercise-table">
+              <thead>
+                <tr>
+                  <th>Exercise</th>
+                  <th style="width: 100px;">Weight</th>
+                  <th style="width: 80px;">Reps / Sets</th>
+                  <th style="width: 50px;">Done</th>
+                  <th style="width: 45px;">Del</th>
+                </tr>
+              </thead>
+              <tbody id="exerciseListBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PR / Max Lift Tracker -->
+        <div class="dash-card col-span-2">
+          <div class="dash-card-header">
+            <h3>🏆 Personal Records & Lifts (PRs)</h3>
+          </div>
+          <div class="pr-grid">
+            <div class="pr-item">
+              <span class="pr-label">Barbell Bench Press</span>
+              <input type="text" id="prBench" class="pr-input" placeholder="100 kg">
+            </div>
+            <div class="pr-item">
+              <span class="pr-label">Barbell Back Squat</span>
+              <input type="text" id="prSquat" class="pr-input" placeholder="140 kg">
+            </div>
+            <div class="pr-item">
+              <span class="pr-label">Conventional Deadlift</span>
+              <input type="text" id="prDeadlift" class="pr-input" placeholder="180 kg">
+            </div>
+            <div class="pr-item">
+              <span class="pr-label">Overhead Press (OHP)</span>
+              <input type="text" id="prOhp" class="pr-input" placeholder="65 kg">
+            </div>
+            <div class="pr-item">
+              <span class="pr-label">Weighted Pull-ups</span>
+              <input type="text" id="prPullups" class="pr-input" placeholder="+25 kg">
+            </div>
+            <div class="pr-item">
+              <span class="pr-label">Body Fat % Target</span>
+              <input type="text" id="prBodyFat" class="pr-input" placeholder="10-12%">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================
+         TAB 3: HYDRATION & FUEL (Water, Macros, Nutrition)
+         ====================================================== -->
+    <section class="tab-panel no-print" id="nutritionTab">
+      <div class="dashboard-grid">
+
+        <!-- Hydration Tracker (3 Liters / 8 Cups) -->
+        <div class="dash-card col-span-2">
+          <div class="dash-card-header">
+            <h3>💧 Daily 3L Water Intake Protocol</h3>
+            <span class="badge" id="waterAmountText">0.0 / 3.0 L</span>
+          </div>
+          <div class="water-progress-bar-wrap">
+            <div class="water-progress-fill" id="waterProgressFill" style="width: 0%;"></div>
+          </div>
+          <div class="water-cups-row">
+            <button class="cup-item" data-cup="1" title="Glass 1 (375ml)">🥛 1</button>
+            <button class="cup-item" data-cup="2" title="Glass 2 (750ml)">🥛 2</button>
+            <button class="cup-item" data-cup="3" title="Glass 3 (1.1L)">🥛 3</button>
+            <button class="cup-item" data-cup="4" title="Glass 4 (1.5L)">🥛 4</button>
+            <button class="cup-item" data-cup="5" title="Glass 5 (1.9L)">🥛 5</button>
+            <button class="cup-item" data-cup="6" title="Glass 6 (2.25L)">🥛 6</button>
+            <button class="cup-item" data-cup="7" title="Glass 7 (2.6L)">🥛 7</button>
+            <button class="cup-item" data-cup="8" title="Glass 8 (3.0L)">🏆 8</button>
+          </div>
+          <p class="card-desc" style="margin-top: 12px;">Tap a glass to mark your hydration. Adequate water accelerates muscle recovery and cognitive focus.</p>
+        </div>
+
+        <!-- Daily Target Macros Card -->
+        <div class="dash-card col-span-2">
+          <div class="dash-card-header">
+            <h3>🥗 Daily Target Macros & Diet</h3>
+          </div>
+          <div class="macro-grid">
+            <div class="macro-box">
+              <label for="macroCalories">Daily Calorie Target</label>
+              <input type="text" id="macroCalories" class="styled-input" placeholder="2,800 kcal">
+            </div>
+            <div class="macro-box">
+              <label for="macroProtein">Daily Protein</label>
+              <input type="text" id="macroProtein" class="styled-input" placeholder="180 g">
+            </div>
+            <div class="macro-box">
+              <label for="macroCarbs">Carbohydrates</label>
+              <input type="text" id="macroCarbs" class="styled-input" placeholder="320 g">
+            </div>
+            <div class="macro-box">
+              <label for="macroFats">Healthy Fats</label>
+              <input type="text" id="macroFats" class="styled-input" placeholder="70 g">
+            </div>
+          </div>
+          <div class="input-block" style="margin-top: 10px;">
+            <label for="dietNotes">Nutrition Rules / Supplements:</label>
+            <input type="text" id="dietNotes" class="styled-input" placeholder="5g Creatine Monohydrate, Whey Isolate, Multivitamin...">
+          </div>
+        </div>
+
+        <!-- Quote of Discipline -->
+        <div class="dash-card col-span-2 quote-highlight-card">
+          <div class="quote-header">
+            <span class="bolt">⚡</span>
+            <span>DAILY DISCIPLINE MINDSET</span>
+            <button class="refresh-quote-btn" id="refreshQuoteBtn" title="Next Motivational Quote">↻</button>
+          </div>
+          <blockquote class="motivational-quote-text" id="quoteText">
+            "The pain of discipline is far less than the pain of regret. Lock in."
+          </blockquote>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================
+         TAB 4: DISCIPLINE STATS & ANALYTICS
+         ====================================================== -->
+    <section class="tab-panel no-print" id="analyticsTab">
+      <div class="dashboard-grid">
+
+        <!-- Stat Card 1: Today's Routine -->
+        <div class="stat-card">
+          <span class="stat-title">TODAY'S HABITS</span>
+          <span class="stat-big" id="statTodayBig">0 / 12</span>
+          <span class="stat-sub" id="statTodayPct">0% Routine Completed</span>
+        </div>
+
+        <!-- Stat Card 2: Monthly Consistency -->
+        <div class="stat-card">
+          <span class="stat-title">MONTH SCORE</span>
+          <span class="stat-big" id="statMonthBig">0%</span>
+          <span class="stat-sub" id="statTotalChecks">0 Total Checks Logged</span>
+        </div>
+
+        <!-- Stat Card 3: Average Sleep -->
+        <div class="stat-card">
+          <span class="stat-title">SLEEP RECOVERY</span>
+          <span class="stat-big" id="statSleepBig">- hrs</span>
+          <span class="stat-sub">Target: 8.0 hrs</span>
+        </div>
+
+        <!-- Stat Card 4: Current Daily Streak -->
+        <div class="stat-card">
+          <span class="stat-title">DAILY STREAK</span>
+          <span class="stat-big text-gold" id="statStreakBig">0 Days 🔥</span>
+          <span class="stat-sub">Consecutive Active Days</span>
+        </div>
+
+        <!-- Backup & Data Controls -->
+        <div class="dash-card col-span-2">
+          <div class="dash-card-header">
+            <h3>💾 Data Backup & Portability</h3>
+          </div>
+          <p class="card-desc">All habit and workout data is stored privately on your device. Export a backup or transfer data between your PC and iPhone anytime.</p>
+          <div class="action-buttons-row">
+            <button class="btn btn-sub" id="exportDataBtn">⬇️ Export JSON Backup</button>
+            <label class="btn btn-sub" style="cursor: pointer;">
+              ⬆️ Import Backup
+              <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </label>
+            <button class="btn btn-glow" id="cardCopyCodeBtn">📋 Copy Data Code</button>
+            <button class="btn btn-sub" id="cardPasteCodeBtn">📥 Paste Data Code</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================
+         TAB 5: ATHLETE PROFILE (Clean Profile + Clear Profile)
+         ====================================================== -->
+    <section class="tab-panel no-print" id="profileTab">
+      <div class="profile-center-container">
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-avatar-large">⚡</div>
+            <div>
+              <h2 id="profDisplayTitle">ATHLETE PROFILE</h2>
+              <span class="profile-meta-sub">Daily Discipline & Physique Protocol</span>
+            </div>
+          </div>
+
+          <div class="profile-grid">
+            <div class="p-input-box">
+              <label for="profNameInput">Athlete Full Name</label>
+              <input type="text" id="profNameInput" placeholder="e.g. Alex Hunter">
+            </div>
+            <div class="p-input-box">
+              <label for="profAgeInput">Age</label>
+              <input type="number" id="profAgeInput" placeholder="24">
+            </div>
+            <div class="p-input-box">
+              <label for="profHeightInput">Height</label>
+              <input type="text" id="profHeightInput" placeholder="182 cm">
+            </div>
+            <div class="p-input-box">
+              <label for="profStartWeightInput">Starting Weight</label>
+              <input type="text" id="profStartWeightInput" placeholder="84 kg">
+            </div>
+            <div class="p-input-box">
+              <label for="profGoalWeightInput">Target Goal Weight</label>
+              <input type="text" id="profGoalWeightInput" placeholder="78 kg">
+            </div>
+            <div class="p-input-box">
+              <label for="profBodyFatGoalInput">Target Body Fat</label>
+              <input type="text" id="profBodyFatGoalInput" placeholder="10%">
+            </div>
+            <div class="p-input-box full-width">
+              <label for="profNonNegotiablesInput">3 Non-Negotiable Daily Rules</label>
+              <textarea id="profNonNegotiablesInput" rows="3" placeholder="1. 05:00 AM wake up&#10;2. 6x gym sessions / week&#10;3. Zero alcohol & 3L water minimum"></textarea>
+            </div>
+          </div>
+
+          <div class="profile-actions-bar">
+            <button class="btn btn-danger" id="clearProfileBtn" title="Completely clear all profile details">
+              🗑️ Clear Profile
+            </button>
+            <button class="btn btn-glow" id="saveProfileBtn">
+              💾 Save Profile
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

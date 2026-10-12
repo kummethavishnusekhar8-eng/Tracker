@@ -1,0 +1,106 @@
+{
+  "athleteProfile": null,
+  "months": {
+    "2026_October": {
+      "name": "",
+      "month": "October",
+      "year": 2026,
+      "day": "Day 12",
+      "goal": "",
+      "habits": [
+        "Workout / Exercise",
+        "10,000 Steps",
+        "Drink 3L Water",
+        "No Junk Food",
+        "Healthy Meals",
+        "Read / Learn",
+        "Meditate / Journal",
+        "Wake Up Early",
+        "Sleep On Time",
+        "Be Productive",
+        "Deep Work Session",
+        "Daily Reflection"
+      ],
+      "habitGrid": {},
+      "sleepGrid": {},
+      "weekly": {
+        "w1Weight": "",
+        "w1Win1": "",
+        "w1Win2": "",
+        "w1Win3": "",
+        "w1Focus1": "",
+        "w1Focus2": "",
+        "w2Weight": "",
+        "w2Win1": "",
+        "w2Win2": "",
+        "w2Win3": "",
+        "w2Focus1": "",
+        "w2Focus2": "",
+        "w3Weight": "",
+        "w3Win1": "",
+        "w3Win2": "",
+        "w3Win3": "",
+        "w3Focus1": "",
+        "w3Focus2": "",
+        "w4Weight": "",
+        "w4Win1": "",
+        "w4Win2": "",
+        "w4Win3": "",
+        "w4Focus1": "",
+        "w4Focus2": ""
+      },
+      "reflection": {
+        "refWorked1": "",
+        "refWorked2": "",
+        "refWorked3": "",
+        "refHeld1": "",
+        "refHeld2": "",
+        "refHeld3": ""
+      },
+      "water": 0,
+      "split": "Push (Chest, Shoulders, Triceps)",
+      "splitNotes": "",
+      "exercises": [
+        {
+          "name": "Incline DB Bench Press",
+          "weight": "32 kg",
+          "reps": "10",
+          "done": true
+        },
+        {
+          "name": "Weighted Chest Dips",
+          "weight": "+15 kg",
+          "reps": "12",
+          "done": true
+        },
+        {
+          "name": "Cable Lateral Raises",
+          "weight": "12 kg",
+          "reps": "15",
+          "done": false
+        },
+        {
+          "name": "Overhead Tricep Extension",
+          "weight": "28 kg",
+          "reps": "12",
+          "done": false
+        }
+      ],
+      "prs": {
+        "bench": "",
+        "squat": "",
+        "deadlift": "",
+        "ohp": "",
+        "pullups": "",
+        "bodyfat": ""
+      },
+      "macros": {
+        "calories": "",
+        "protein": "",
+        "carbs": "",
+        "fats": "",
+        "dietNotes": ""
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "tracker",
+  "version": "2.0.0",
+  "description": "Daily Discipline and Habit Tracker - Mobile & Desktop Dashboard (100% Serverless)",
+  "main": "index.html",
+  "scripts": {
+    "open": "start index.html"
+  },
+  "keywords": [
+    "habit-tracker",
+    "discipline",
+    "fitness",
+    "pwa",
+    "serverless",
+    "printable"
+  ],
+  "author": "",
+  "license": "MIT"
+}
