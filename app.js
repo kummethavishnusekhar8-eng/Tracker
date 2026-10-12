@@ -1683,6 +1683,7 @@ function setupPhoneConnectModal() {
   const phoneBtn = document.getElementById("phoneConnectBtn");
   const modal = document.getElementById("phoneModal");
   const closeBtn = document.getElementById("closePhoneModalBtn");
+  const backBtn = document.getElementById("backPhoneModalBtn");
   const dismissBtn = document.getElementById("dismissModalBtn");
   const copySyncUrlBtn = document.getElementById("copySyncUrlBtn");
   const syncUrlInput = document.getElementById("syncUrlInput");
@@ -1697,6 +1698,7 @@ function setupPhoneConnectModal() {
 
   const closeModal = () => { modal.style.display = "none"; };
   closeBtn?.addEventListener("click", closeModal);
+  backBtn?.addEventListener("click", closeModal);
   dismissBtn?.addEventListener("click", closeModal);
   modal?.addEventListener("click", (e) => {
     if (e.target === modal) closeModal();
